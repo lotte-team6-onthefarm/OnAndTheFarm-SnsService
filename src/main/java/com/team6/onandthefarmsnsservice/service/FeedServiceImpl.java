@@ -13,14 +13,16 @@ import com.team6.onandthefarmsnsservice.repository.FeedImageRepository;
 import com.team6.onandthefarmsnsservice.repository.FeedLikeRepository;
 import com.team6.onandthefarmsnsservice.repository.FeedRepository;
 import com.team6.onandthefarmsnsservice.repository.ScrapRepository;
+import com.team6.onandthefarmsnsservice.vo.FeedDetailResponse;
 import com.team6.onandthefarmsnsservice.vo.FeedResponse;
+import com.team6.onandthefarmsnsservice.vo.imageProduct.ImageInfo;
 import com.team6.onandthefarmsnsservice.vo.user.Following;
 import com.team6.onandthefarmsnsservice.vo.user.Seller;
 import com.team6.onandthefarmsnsservice.vo.user.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import com.team6.onandthefarmsnsservice.utils.DateUtils;
-import com.team6.onandthefarmsnsservice.vo.ImageProduct;
+import com.team6.onandthefarmsnsservice.vo.imageProduct.ImageProductInfo;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -284,8 +286,8 @@ public class FeedServiceImpl implements FeedService{
 
             FeedImage saveFeedImage = feedImageRepository.save(feedImage);
 
-            for(ImageProduct imageProduct : feedInfoDto.getFeedProductIdList()){
-                if(imageProduct.getImageNumber() == imageIndex){
+            for(ImageProductInfo imageProduct : feedInfoDto.getFeedProductIdList()){
+                if(imageProduct.getImageIndex() == imageIndex){
                     FeedImageProduct feedImageProduct = new FeedImageProduct();
                     feedImageProduct.setFeedImage(saveFeedImage);
                     feedImageProduct.setProductId(imageProduct.getProductId());
@@ -297,6 +299,75 @@ public class FeedServiceImpl implements FeedService{
         }
 
         return savedFeed.getFeedId();
+    }
+
+    /**
+     * 피드 상세 페이지 조회하는 메서드
+     * @param feedId
+     * @return FeedDetailResponse
+     */
+    @Override
+    public FeedDetailResponse findFeedDetail(Long feedId) {
+
+        FeedDetailResponse feedDetailResponse = null;
+
+        Optional<Feed> savedFeed = feedRepository.findByIdAndStatus(feedId);
+        if(savedFeed.isPresent()){
+            Feed feedEntity = savedFeed.get();
+
+            List<ImageInfo> imageInfoList = new ArrayList<>();
+            List<ImageProductInfo> imageProductInfoList = new ArrayList<>();
+
+            List<FeedImage> savedFeedImageList = feedImageRepository.findByFeed(feedEntity);
+            for(FeedImage feedImage : savedFeedImageList){
+                ImageInfo imageInfo = ImageInfo.builder()
+                        .feedImageId(feedImage.getFeedImageId())
+                        .feedImageSrc(feedImage.getFeedImageSrc())
+                        .build();
+                imageInfoList.add(imageInfo);
+
+                List<FeedImageProduct> savedFeedImageProductList = feedImageProductRepository.findByFeedImage(feedImage);
+                for(FeedImageProduct feedImageProduct : savedFeedImageProductList){
+                    ImageProductInfo imageProductInfo = ImageProductInfo.builder()
+                            .feedImageId(feedImage.getFeedImageId())
+                            .productId(feedImageProduct.getProductId())
+                            .build();
+                    imageProductInfoList.add(imageProductInfo);
+                }
+            }
+
+            feedDetailResponse = FeedDetailResponse.builder()
+                    .feedId(feedEntity.getFeedId())
+                    .feedTitle(feedEntity.getFeedTitle())
+                    .feedContent(feedEntity.getFeedContent())
+                    .feedViewCount(feedEntity.getFeedViewCount())
+                    .feedLikeCount(feedEntity.getFeedLikeCount())
+                    .feedShareCount(feedEntity.getFeedShareCount())
+                    .feedScrapCount(feedEntity.getFeedScrapCount())
+                    .feedCommentCount(feedEntity.getFeedCommentCount())
+                    .feedCreateAt(feedEntity.getFeedCreateAt())
+                    .feedUpdateAt(feedEntity.getFeedUpdateAt())
+                    .feedImageList(imageInfoList)
+                    .feedImageProductList(imageProductInfoList)
+                    .build();
+        }
+
+        return feedDetailResponse;
+    }
+
+    /**
+     * 피드 조회수 증가하는 메서드
+     * @param feedId
+     * @return Boolean
+     */
+    @Override
+    public Boolean upViewCount(Long feedId) {
+        Optional<Feed> savedFeed = feedRepository.findById(feedId);
+        if(savedFeed.isPresent()){
+            savedFeed.get().setFeedViewCount(savedFeed.get().getFeedViewCount()+1);
+            return true;
+        }
+        return false;
     }
 
 }

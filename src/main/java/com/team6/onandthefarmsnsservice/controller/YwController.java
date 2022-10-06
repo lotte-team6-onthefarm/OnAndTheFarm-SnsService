@@ -3,9 +3,9 @@ package com.team6.onandthefarmsnsservice.controller;
 import com.team6.onandthefarmsnsservice.dto.FeedInfoDto;
 import com.team6.onandthefarmsnsservice.service.FeedService;
 import com.team6.onandthefarmsnsservice.utils.BaseResponse;
+import com.team6.onandthefarmsnsservice.vo.FeedDetailResponse;
 import com.team6.onandthefarmsnsservice.vo.FeedUploadProductRequest;
 import com.team6.onandthefarmsnsservice.vo.FeedUploadRequest;
-import com.team6.onandthefarmsnsservice.vo.ImageProduct;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,12 +15,10 @@ import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
 import java.security.Principal;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
-@RequestMapping("/api/user")
+@RequestMapping("/api/user/sns")
 public class YwController {
 
     private final FeedService feedService;
@@ -30,9 +28,11 @@ public class YwController {
         this.feedService = feedService;
     }
 
-    @PostMapping("/sns/upload")
+    @PostMapping("/upload")
     @ApiOperation("sns 피드 업로드")
     public ResponseEntity<BaseResponse> uploadFeed(@ApiIgnore Principal principal, @RequestPart FeedUploadRequest feedUploadRequest, @RequestPart List<MultipartFile> feedImages, @RequestPart FeedUploadProductRequest feedUploadProductRequest){
+
+        //태그등록 해야함...
 
         FeedInfoDto feedInfoDto = new FeedInfoDto();
         feedInfoDto.setFeedTitle(feedUploadRequest.getFeedTitle());
@@ -52,11 +52,43 @@ public class YwController {
                 .build();
         if(feedId == null){
             baseResponse = BaseResponse.builder()
-                    .httpStatus(HttpStatus.FORBIDDEN)
+                    .httpStatus(HttpStatus.BAD_REQUEST)
                     .message("feed upload fail")
                     .build();
+            return new ResponseEntity(baseResponse, HttpStatus.BAD_REQUEST);
         }
 
-        return new ResponseEntity(baseResponse, HttpStatus.CREATED);
+        return new ResponseEntity(baseResponse, HttpStatus.OK);
     }
+
+    @GetMapping("/detail")
+    @ApiOperation("sns 피드 상세페이지")
+    public ResponseEntity<BaseResponse<FeedDetailResponse>> findFeedDetail(@RequestParam Long feedId){
+
+        //조회수 증가
+        Boolean isUpViewCount = feedService.upViewCount(feedId);
+        if(!isUpViewCount){
+            return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        //태그도 보내줘야함
+        FeedDetailResponse feedDetailResponse = feedService.findFeedDetail(feedId);
+
+        BaseResponse baseResponse = BaseResponse.builder()
+                .httpStatus(HttpStatus.OK)
+                .message("find feed success")
+                .data(feedDetailResponse)
+                .build();
+        if(feedDetailResponse == null){
+            baseResponse = BaseResponse.builder()
+                    .httpStatus(HttpStatus.BAD_REQUEST)
+                    .message("find feed fail")
+                    .build();
+            return new ResponseEntity(baseResponse, HttpStatus.BAD_REQUEST);
+        }
+
+        return new ResponseEntity(baseResponse, HttpStatus.OK);
+    }
+
+
 }
