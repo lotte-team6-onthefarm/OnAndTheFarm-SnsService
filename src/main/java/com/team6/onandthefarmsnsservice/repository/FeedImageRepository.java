@@ -7,7 +7,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-@Repository
 public interface FeedImageRepository extends CrudRepository<FeedImage,Long> {
     List<FeedImage> findByFeed(Feed feed);
 }
