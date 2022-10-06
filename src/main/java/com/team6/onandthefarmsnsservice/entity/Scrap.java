@@ -12,7 +12,7 @@ import javax.persistence.*;
 @AllArgsConstructor
 @Getter
 @Setter
-public class scrap {
+public class Scrap {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long scrapId;

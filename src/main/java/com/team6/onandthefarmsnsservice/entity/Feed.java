@@ -25,9 +25,7 @@ public class Feed {
 
     private Long memberId;
 
-    private Integer memberRoll; // 1: user 2: seller
-
-    private Long productId;
+    private String memberRole;
 
     private String feedTitle;
 
