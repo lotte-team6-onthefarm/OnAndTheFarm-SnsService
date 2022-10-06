@@ -5,9 +5,7 @@ import lombok.*;
 import java.util.List;
 
 @Data
-public class FeedUploadRequest {
+public class FeedUploadProductRequest {
 
-    private String feedTitle;
-    private String feedContent;
-
+    private List<ImageProduct> feedProductIdList;
 }

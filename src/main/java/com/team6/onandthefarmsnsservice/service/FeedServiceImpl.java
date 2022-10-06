@@ -1,18 +1,24 @@
 package com.team6.onandthefarmsnsservice.service;
 
 import com.team6.onandthefarmsnsservice.dto.FeedDto;
-import com.team6.onandthefarmsnsservice.dto.SnsFeedDto;
+import com.team6.onandthefarmsnsservice.dto.FeedInfoDto;
 import com.team6.onandthefarmsnsservice.entity.Feed;
 import com.team6.onandthefarmsnsservice.entity.FeedImage;
+import com.team6.onandthefarmsnsservice.entity.FeedImageProduct;
 import com.team6.onandthefarmsnsservice.feignclient.MemberServiceClient;
+import com.team6.onandthefarmsnsservice.repository.FeedImageProductRepository;
 import com.team6.onandthefarmsnsservice.repository.FeedImageRepository;
 import com.team6.onandthefarmsnsservice.repository.FeedRepository;
+import com.team6.onandthefarmsnsservice.utils.DateUtils;
 import com.team6.onandthefarmsnsservice.vo.FeedResponse;
+import com.team6.onandthefarmsnsservice.vo.ImageProduct;
 import com.team6.onandthefarmsnsservice.vo.user.Seller;
 import com.team6.onandthefarmsnsservice.vo.user.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,13 +35,24 @@ public class FeedServiceImpl implements FeedService{
 
     private FeedImageRepository feedImageRepository;
 
+    private FeedImageProductRepository feedImageProductRepository;
+
+    private DateUtils dateUtils;
+    Environment env;
+
     @Autowired
     public FeedServiceImpl(FeedRepository feedRepository,
                            MemberServiceClient memberServiceClient,
-                           FeedImageRepository feedImageRepository) {
+                           FeedImageRepository feedImageRepository,
+                           FeedImageProductRepository feedImageProductRepository,
+                           DateUtils dateUtils,
+                           Environment env) {
         this.feedRepository = feedRepository;
         this.memberServiceClient=memberServiceClient;
         this.feedImageRepository=feedImageRepository;
+        this.feedImageProductRepository = feedImageProductRepository;
+        this.dateUtils = dateUtils;
+        this.env = env;
     }
 
     public List<FeedResponse> findByRecentFeedList(FeedDto feedDto){
@@ -116,8 +133,47 @@ public class FeedServiceImpl implements FeedService{
     }
 
     @Override
-    public Long uploadFeed(SnsFeedDto snsFeedDto) {
-        return null;
+    public Long uploadFeed(Long memberId, String memberRole, FeedInfoDto feedInfoDto) {
+
+        Feed feed = new Feed();
+        feed.setMemberId(memberId);
+        feed.setMemberRoll(memberRole);
+        feed.setFeedTitle(feedInfoDto.getFeedTitle());
+        feed.setFeedContent(feedInfoDto.getFeedContent());
+        feed.setFeedViewCount(0);
+        feed.setFeedLikeCount(0);
+        feed.setFeedShareCount(0);
+        feed.setFeedScrapCount(0);
+        feed.setFeedCommentCount(0);
+        feed.setFeedStatus(true);
+        feed.setFeedCreateAt(dateUtils.transDate(env.getProperty("dateutils.format")));
+
+        Feed savedFeed = feedRepository.save(feed);
+
+        int imageIndex = 0;
+        for (MultipartFile imageSrc : feedInfoDto.getFeedImgSrcList()){
+            //imageSrc 처리 코드 필요
+            String imageOriginName = imageSrc.getOriginalFilename();
+
+            FeedImage feedImage = new FeedImage();
+            feedImage.setFeed(savedFeed);
+            feedImage.setFeedImageSrc(imageOriginName);
+
+            FeedImage saveFeedImage = feedImageRepository.save(feedImage);
+
+            for(ImageProduct imageProduct : feedInfoDto.getFeedProductIdList()){
+                if(imageProduct.getImageNumber() == imageIndex){
+                    FeedImageProduct feedImageProduct = new FeedImageProduct();
+                    feedImageProduct.setFeedImage(saveFeedImage);
+                    feedImageProduct.setProductId(imageProduct.getProductId());
+
+                    FeedImageProduct savedFeedImageProduct = feedImageProductRepository.save(feedImageProduct);
+                }
+            }
+            imageIndex++;
+        }
+
+        return savedFeed.getFeedId();
     }
 
 }

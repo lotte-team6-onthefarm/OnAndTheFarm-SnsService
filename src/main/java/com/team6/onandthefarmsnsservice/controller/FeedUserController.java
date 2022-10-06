@@ -1,7 +1,6 @@
 package com.team6.onandthefarmsnsservice.controller;
 
 import com.team6.onandthefarmsnsservice.dto.FeedDto;
-import com.team6.onandthefarmsnsservice.dto.SnsFeedDto;
 import com.team6.onandthefarmsnsservice.service.FeedService;
 import com.team6.onandthefarmsnsservice.utils.BaseResponse;
 import com.team6.onandthefarmsnsservice.vo.FeedRequest;
@@ -18,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/user/feed")
