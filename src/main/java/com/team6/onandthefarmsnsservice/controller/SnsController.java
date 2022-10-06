@@ -12,7 +12,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 @RestController
+@RequestMapping("/api/user")
 public class SnsController {
 
     private final FeedService feedService;
@@ -22,7 +26,7 @@ public class SnsController {
         this.feedService = feedService;
     }
 
-    @PostMapping("/api/user/sns/upload")
+    @PostMapping("/sns/upload")
     @ApiOperation("sns 피드 업로드")
     public ResponseEntity<BaseResponse> uploadFeed(@RequestBody FeedUploadRequest feedUploadRequest){
 
