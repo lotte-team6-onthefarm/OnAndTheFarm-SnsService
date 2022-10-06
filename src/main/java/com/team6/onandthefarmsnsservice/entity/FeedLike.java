@@ -20,4 +20,6 @@ public class FeedLike {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "feedId")
     private Feed feed;
+
+    private Long memberId;
 }
