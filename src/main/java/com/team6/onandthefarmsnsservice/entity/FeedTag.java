@@ -20,4 +20,6 @@ public class FeedTag {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "feedId")
     private Feed feed;
+
+    private String feedTagName;
 }

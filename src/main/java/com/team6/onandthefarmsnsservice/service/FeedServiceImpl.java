@@ -2,17 +2,9 @@ package com.team6.onandthefarmsnsservice.service;
 
 import com.team6.onandthefarmsnsservice.dto.FeedDto;
 import com.team6.onandthefarmsnsservice.dto.FeedInfoDto;
-import com.team6.onandthefarmsnsservice.entity.Feed;
-import com.team6.onandthefarmsnsservice.entity.FeedImage;
-import com.team6.onandthefarmsnsservice.entity.FeedLike;
-import com.team6.onandthefarmsnsservice.entity.Scrap;
-import com.team6.onandthefarmsnsservice.entity.FeedImageProduct;
+import com.team6.onandthefarmsnsservice.entity.*;
 import com.team6.onandthefarmsnsservice.feignclient.MemberServiceClient;
-import com.team6.onandthefarmsnsservice.repository.FeedImageProductRepository;
-import com.team6.onandthefarmsnsservice.repository.FeedImageRepository;
-import com.team6.onandthefarmsnsservice.repository.FeedLikeRepository;
-import com.team6.onandthefarmsnsservice.repository.FeedRepository;
-import com.team6.onandthefarmsnsservice.repository.ScrapRepository;
+import com.team6.onandthefarmsnsservice.repository.*;
 import com.team6.onandthefarmsnsservice.vo.FeedDetailResponse;
 import com.team6.onandthefarmsnsservice.vo.FeedResponse;
 import com.team6.onandthefarmsnsservice.vo.imageProduct.ImageInfo;
@@ -46,6 +38,8 @@ public class FeedServiceImpl implements FeedService{
 
     private final FeedLikeRepository feedLikeRepository;
 
+    private final FeedTagRepository feedTagRepository;
+
     private final ScrapRepository scrapRepository;
     private final FeedImageProductRepository feedImageProductRepository;
 
@@ -59,6 +53,7 @@ public class FeedServiceImpl implements FeedService{
                            FeedLikeRepository feedLikeRepository,
                            ScrapRepository scrapRepository,
                            FeedImageProductRepository feedImageProductRepository,
+                           FeedTagRepository feedTagRepository,
                            DateUtils dateUtils,
                            Environment env) {
 
@@ -68,6 +63,7 @@ public class FeedServiceImpl implements FeedService{
             this.memberServiceClient=memberServiceClient;
             this.feedImageRepository=feedImageRepository;
             this.feedImageProductRepository = feedImageProductRepository;
+            this.feedTagRepository = feedTagRepository;
             this.dateUtils = dateUtils;
             this.env = env;
     }
@@ -273,7 +269,16 @@ public class FeedServiceImpl implements FeedService{
         feed.setFeedStatus(true);
         feed.setFeedCreateAt(dateUtils.transDate(env.getProperty("dateutils.format")));
 
+        //피드 추가
         Feed savedFeed = feedRepository.save(feed);
+
+        //피드 태그 추가
+        for(String tag : feedInfoDto.getFeedTag()) {
+            FeedTag feedTag = new FeedTag();
+            feedTag.setFeed(savedFeed);
+            feedTag.setFeedTagName(tag);
+            feedTagRepository.save(feedTag);
+        }
 
         int imageIndex = 0;
         for (MultipartFile imageSrc : feedInfoDto.getFeedImgSrcList()){
@@ -284,6 +289,7 @@ public class FeedServiceImpl implements FeedService{
             feedImage.setFeed(savedFeed);
             feedImage.setFeedImageSrc(imageOriginName);
 
+            //피드 이미지 추가
             FeedImage saveFeedImage = feedImageRepository.save(feedImage);
 
             for(ImageProductInfo imageProduct : feedInfoDto.getFeedProductIdList()){
@@ -292,6 +298,7 @@ public class FeedServiceImpl implements FeedService{
                     feedImageProduct.setFeedImage(saveFeedImage);
                     feedImageProduct.setProductId(imageProduct.getProductId());
 
+                    //피드 이미지 별 상품 추가
                     FeedImageProduct savedFeedImageProduct = feedImageProductRepository.save(feedImageProduct);
                 }
             }
