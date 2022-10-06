@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface FeedRepository extends CrudRepository<Feed,Long> {
+
 }
