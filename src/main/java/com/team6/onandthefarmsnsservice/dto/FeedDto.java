@@ -1,4 +1,4 @@
-package com.team6.onandthefarmsnsservice.vo;
+package com.team6.onandthefarmsnsservice.dto;
 
 import lombok.*;
 
@@ -7,6 +7,6 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class FeedRequest {
+public class FeedDto {
     private Integer pageNumber;
 }

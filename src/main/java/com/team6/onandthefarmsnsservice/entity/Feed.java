@@ -15,6 +15,9 @@ import javax.persistence.Id;
 @AllArgsConstructor
 @Getter
 @Setter
+/**
+ * memberRoll => 1: user 2: seller
+ */
 public class Feed {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -40,6 +43,10 @@ public class Feed {
 
     private Integer feedShareCount;
 
-    private Boolean feedStatus;
+    private Boolean feedStatus; // true : 피드게시중 / false : 피드 삭제
+
+    private Integer feedScrapCount;
+
+    private Integer feedCommentCount;
 
 }
