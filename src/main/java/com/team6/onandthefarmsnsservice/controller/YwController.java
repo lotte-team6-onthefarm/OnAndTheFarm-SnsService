@@ -32,11 +32,10 @@ public class YwController {
     @ApiOperation("sns 피드 업로드")
     public ResponseEntity<BaseResponse> uploadFeed(@ApiIgnore Principal principal, @RequestPart FeedUploadRequest feedUploadRequest, @RequestPart List<MultipartFile> feedImages, @RequestPart FeedUploadProductRequest feedUploadProductRequest){
 
-        //태그등록 해야함...
-
         FeedInfoDto feedInfoDto = new FeedInfoDto();
         feedInfoDto.setFeedTitle(feedUploadRequest.getFeedTitle());
         feedInfoDto.setFeedContent(feedUploadRequest.getFeedContent());
+        feedInfoDto.setFeedTag(feedUploadRequest.getFeedTag());
         feedInfoDto.setFeedProductIdList(feedUploadProductRequest.getFeedProductIdList());
         feedInfoDto.setFeedImgSrcList(feedImages);
 

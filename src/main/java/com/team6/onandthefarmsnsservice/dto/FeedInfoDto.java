@@ -13,6 +13,8 @@ public class FeedInfoDto {
 
     private String feedContent;
 
+    private List<String> feedTag;
+
     private List<MultipartFile> feedImgSrcList;
 
     private List<ImageProductInfo> feedProductIdList;
