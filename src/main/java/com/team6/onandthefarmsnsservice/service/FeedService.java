@@ -6,7 +6,7 @@ import com.team6.onandthefarmsnsservice.dto.profile.ProfileFeedDto;
 import com.team6.onandthefarmsnsservice.dto.profile.ProfileMainFeedDto;
 import com.team6.onandthefarmsnsservice.dto.profile.ProfileMainScrapDto;
 import com.team6.onandthefarmsnsservice.dto.profile.ProfileMainWishDto;
-import com.team6.onandthefarmsnsservice.vo.FeedDetailResponse;
+import com.team6.onandthefarmsnsservice.vo.feed.FeedDetailResponse;
 import com.team6.onandthefarmsnsservice.vo.FeedResponse;
 import com.team6.onandthefarmsnsservice.dto.FeedInfoDto;
 import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainFeedResponse;

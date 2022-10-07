@@ -1,4 +1,4 @@
-package com.team6.onandthefarmsnsservice.vo;
+package com.team6.onandthefarmsnsservice.vo.feed;
 
 import lombok.*;
 

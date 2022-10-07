@@ -1,7 +1,8 @@
-package com.team6.onandthefarmsnsservice.vo;
+package com.team6.onandthefarmsnsservice.vo.feed;
 
-import com.team6.onandthefarmsnsservice.vo.imageProduct.ImageInfo;
-import com.team6.onandthefarmsnsservice.vo.imageProduct.ImageProductInfo;
+import com.team6.onandthefarmsnsservice.entity.FeedTag;
+import com.team6.onandthefarmsnsservice.vo.feed.imageProduct.ImageInfo;
+import com.team6.onandthefarmsnsservice.vo.feed.imageProduct.ImageProductInfo;
 import lombok.Builder;
 import lombok.Data;
 
@@ -34,5 +35,7 @@ public class FeedDetailResponse {
     private List<ImageInfo> feedImageList;
 
     private List<ImageProductInfo> feedImageProductList;
+
+    private List<FeedTag> feedTag;
 
 }

@@ -10,9 +10,9 @@ import com.team6.onandthefarmsnsservice.entity.*;
 import com.team6.onandthefarmsnsservice.feignclient.MemberServiceClient;
 import com.team6.onandthefarmsnsservice.feignclient.ProductServiceClient;
 import com.team6.onandthefarmsnsservice.repository.*;
-import com.team6.onandthefarmsnsservice.vo.FeedDetailResponse;
+import com.team6.onandthefarmsnsservice.vo.feed.FeedDetailResponse;
 import com.team6.onandthefarmsnsservice.vo.FeedResponse;
-import com.team6.onandthefarmsnsservice.vo.imageProduct.ImageInfo;
+import com.team6.onandthefarmsnsservice.vo.feed.imageProduct.ImageInfo;
 import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainFeedResponse;
 import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainScrapResponse;
 import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainWishResponse;
@@ -25,7 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 
 import com.team6.onandthefarmsnsservice.utils.DateUtils;
-import com.team6.onandthefarmsnsservice.vo.imageProduct.ImageProductInfo;
+import com.team6.onandthefarmsnsservice.vo.feed.imageProduct.ImageProductInfo;
 
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
@@ -362,6 +362,8 @@ public class FeedServiceImpl implements FeedService {
 				}
 			}
 
+			List<FeedTag> feedTagList = feedTagRepository.findByFeed(feedEntity);
+
 			feedDetailResponse = FeedDetailResponse.builder()
 					.feedId(feedEntity.getFeedId())
 					.feedTitle(feedEntity.getFeedTitle())
@@ -375,6 +377,7 @@ public class FeedServiceImpl implements FeedService {
 					.feedUpdateAt(feedEntity.getFeedUpdateAt())
 					.feedImageList(imageInfoList)
 					.feedImageProductList(imageProductInfoList)
+					.feedTag(feedTagList)
 					.build();
 		}
 

@@ -1,6 +1,6 @@
 package com.team6.onandthefarmsnsservice.dto;
 
-import com.team6.onandthefarmsnsservice.vo.imageProduct.ImageProductInfo;
+import com.team6.onandthefarmsnsservice.vo.feed.imageProduct.ImageProductInfo;
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
 
