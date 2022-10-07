@@ -59,6 +59,7 @@ public class FeedServiceImpl implements FeedService {
 	private DateUtils dateUtils;
 	Environment env;
 
+
 	@Autowired
 	public FeedServiceImpl(FeedRepository feedRepository,
 			MemberServiceClient memberServiceClient,
@@ -178,6 +179,7 @@ public class FeedServiceImpl implements FeedService {
 						.feedViewCount(feed.getFeedViewCount())
 						.memberId(feed.getMemberId())
 						.memberRole(Integer.valueOf(feed.getMemberRole()))
+            .feedContent(feed.getFeedContent())
 						.build();
 
 				User user = null;
@@ -207,6 +209,7 @@ public class FeedServiceImpl implements FeedService {
 					.feedViewCount(feed.getFeedViewCount())
 					.memberId(feed.getMemberId())
 					.memberRole(Integer.valueOf(feed.getMemberRole()))
+          .feedContent(feed.getFeedContent())
 					.build();
 
 			User user = null;
