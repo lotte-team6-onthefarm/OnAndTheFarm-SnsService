@@ -16,7 +16,7 @@ import com.team6.onandthefarmsnsservice.vo.imageProduct.ImageInfo;
 import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainFeedResponse;
 import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainScrapResponse;
 import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainWishResponse;
-import com.team6.onandthefarmsnsservice.vo.profile.product.Product;
+import com.team6.onandthefarmsnsservice.vo.profile.product.WishProductListResponse;
 import com.team6.onandthefarmsnsservice.vo.user.Following;
 import com.team6.onandthefarmsnsservice.vo.user.Seller;
 import com.team6.onandthefarmsnsservice.vo.user.User;
@@ -432,12 +432,12 @@ public class FeedServiceImpl implements FeedService {
 	public List<ProfileMainWishResponse> findByMemberWishList(ProfileMainWishDto profileMainWishDto) {
 		Long memberId = profileMainWishDto.getMemberId();
 		List<ProfileMainWishResponse> responseList = new ArrayList<>();
-		List<Product> productList = productServiceClient.findWishProductListByMember(memberId);
+		List<WishProductListResponse> productList = productServiceClient.findWishProductListByMember(memberId);
 
-		for (Product product : productList) {
+		for (WishProductListResponse wishProductListResponse : productList) {
 			ProfileMainWishResponse profileMainWishResponse = ProfileMainWishResponse.builder()
-					.productId(product.getProductId())
-					.productImgSrc(product.getProductMainImgSrc())
+					.productId(wishProductListResponse.getProductId())
+					.productImgSrc(wishProductListResponse.getProductMainImgSrc())
 					.build();
 			responseList.add(profileMainWishResponse);
 		}
@@ -469,5 +469,11 @@ public class FeedServiceImpl implements FeedService {
 		return getResponses(size, startIndex, feedList);
 	}
 
+	@Override
+	public List<WishProductListResponse> findByMemberWishDetailList(ProfileMainWishDto profileMainWishDto) {
+		Long memberId = profileMainWishDto.getMemberId();
+		List<WishProductListResponse> wishProductListResponses = productServiceClient.findWishProductListByMember(memberId);
 
+		return wishProductListResponses;
+	}
 }

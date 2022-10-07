@@ -1,4 +1,4 @@
-package com.team6.onandthefarmsnsservice.vo.profile.product;
+package com.team6.onandthefarmsnsservice.vo.profile;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
