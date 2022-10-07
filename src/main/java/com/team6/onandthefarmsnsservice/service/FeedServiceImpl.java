@@ -2,12 +2,15 @@ package com.team6.onandthefarmsnsservice.service;
 
 import com.team6.onandthefarmsnsservice.dto.FeedDto;
 import com.team6.onandthefarmsnsservice.dto.FeedInfoDto;
+import com.team6.onandthefarmsnsservice.dto.profile.ProfileMainFeedDto;
 import com.team6.onandthefarmsnsservice.entity.*;
 import com.team6.onandthefarmsnsservice.feignclient.MemberServiceClient;
 import com.team6.onandthefarmsnsservice.repository.*;
 import com.team6.onandthefarmsnsservice.vo.FeedDetailResponse;
 import com.team6.onandthefarmsnsservice.vo.FeedResponse;
 import com.team6.onandthefarmsnsservice.vo.imageProduct.ImageInfo;
+import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainFeedRequest;
+import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainFeedResponse;
 import com.team6.onandthefarmsnsservice.vo.user.Following;
 import com.team6.onandthefarmsnsservice.vo.user.Seller;
 import com.team6.onandthefarmsnsservice.vo.user.User;
@@ -375,6 +378,25 @@ public class FeedServiceImpl implements FeedService{
             return true;
         }
         return false;
+    }
+
+    @Override
+    public List<ProfileMainFeedResponse> findByMemberFeedList(ProfileMainFeedDto profileMainFeedDto){
+        Long memberId = profileMainFeedDto.getMemberId();
+
+        List<Feed> feedList = feedRepository.findFeedListByMemberId(memberId);
+        List<ProfileMainFeedResponse> responseList = new ArrayList<>();
+        for (Feed feed : feedList) {
+            FeedImage feedThumbnailImage = feedImageRepository.findByFeed(feed).get(0);
+            ProfileMainFeedResponse profileMainFeedResponse = ProfileMainFeedResponse.builder()
+                    .feedId(feed.getFeedId())
+                    .feedImg(feedThumbnailImage)
+                    .build();
+
+            responseList.add(profileMainFeedResponse);
+        }
+
+        return responseList;
     }
 
 }
