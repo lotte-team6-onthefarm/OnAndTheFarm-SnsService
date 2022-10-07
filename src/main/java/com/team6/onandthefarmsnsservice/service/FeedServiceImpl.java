@@ -2,6 +2,7 @@ package com.team6.onandthefarmsnsservice.service;
 
 import com.team6.onandthefarmsnsservice.dto.FeedDto;
 import com.team6.onandthefarmsnsservice.dto.FeedInfoDto;
+import com.team6.onandthefarmsnsservice.dto.profile.ProfileFeedDto;
 import com.team6.onandthefarmsnsservice.dto.profile.ProfileMainFeedDto;
 import com.team6.onandthefarmsnsservice.dto.profile.ProfileMainScrapDto;
 import com.team6.onandthefarmsnsservice.dto.profile.ProfileMainWishDto;
@@ -54,6 +55,7 @@ public class FeedServiceImpl implements FeedService {
 	private final FeedTagRepository feedTagRepository;
 
 	private final ScrapRepository scrapRepository;
+
 	private final FeedImageProductRepository feedImageProductRepository;
 
 	private DateUtils dateUtils;
@@ -179,7 +181,7 @@ public class FeedServiceImpl implements FeedService {
 						.feedViewCount(feed.getFeedViewCount())
 						.memberId(feed.getMemberId())
 						.memberRole(Integer.valueOf(feed.getMemberRole()))
-            .feedContent(feed.getFeedContent())
+            			.feedContent(feed.getFeedContent())
 						.build();
 
 				User user = null;
@@ -194,6 +196,7 @@ public class FeedServiceImpl implements FeedService {
 				}
 				List<FeedImage> feedImage = feedImageRepository.findByFeed(feed);
 				response.setFeedImageSrc(feedImage.get(0).getFeedImageSrc());
+				
 				responseList.add(response);
 			}
 			return responseList;
@@ -440,5 +443,15 @@ public class FeedServiceImpl implements FeedService {
 		}
 
 		return responseList;
+	}
+
+	public List<FeedResponse> findByRecentFeedListAndMemberId(ProfileFeedDto profileFeedDto) {
+		List<Feed> feedList = feedRepository.findFeedListByMemberId(profileFeedDto.getMemberId());
+
+		int startIndex = profileFeedDto.getPageNumber() * pageContentNumber;
+
+		int size = feedList.size();
+
+		return getResponses(size, startIndex, feedList);
 	}
 }
