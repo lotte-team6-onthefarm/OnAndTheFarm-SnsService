@@ -12,6 +12,8 @@ import com.team6.onandthefarmsnsservice.dto.FeedInfoDto;
 import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainFeedResponse;
 import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainScrapResponse;
 import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainWishResponse;
+import com.team6.onandthefarmsnsservice.vo.profile.product.ProductWishResponse;
+import com.team6.onandthefarmsnsservice.vo.profile.product.WishProductListResponse;
 
 import java.util.List;
 
@@ -40,6 +42,8 @@ public interface FeedService {
     List<ProfileMainScrapResponse> findByMemberScrapList(ProfileMainScrapDto profileMainScrapDto);
 
     List<ProfileMainWishResponse> findByMemberWishList(ProfileMainWishDto profileMainWishDto);
+
+    List<WishProductListResponse> findByMemberWishDetailList(ProfileMainWishDto profileMainWishDto);
 
     List<FeedResponse> findByRecentFeedListAndMemberId(ProfileFeedDto profileFeedDto);
 
