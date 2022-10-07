@@ -111,4 +111,22 @@ public class ProfileController {
 
 		return new ResponseEntity(response,HttpStatus.OK);
 	}
+
+	@GetMapping("/profile/scrap")
+	@ApiOperation(value = "프로필 스크랩 전체보기 조회")
+	public ResponseEntity<BaseResponse<List<FeedResponse>>> getProfileScrapFeedResponse(@RequestBody ProfileFeedRequest profileFeedRequest) {
+		ModelMapper modelMapper = new ModelMapper();
+		modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+		ProfileFeedDto profileFeedDto = modelMapper.map(profileFeedRequest, ProfileFeedDto.class);
+
+		List<FeedResponse> responses = feedService.findByRecentScrapFeedListAndMemberId(profileFeedDto);
+
+		BaseResponse response = BaseResponse.builder()
+				.httpStatus(HttpStatus.OK)
+				.message("OK")
+				.data(responses)
+				.build();
+
+		return new ResponseEntity(response,HttpStatus.OK);
+	}
 }
