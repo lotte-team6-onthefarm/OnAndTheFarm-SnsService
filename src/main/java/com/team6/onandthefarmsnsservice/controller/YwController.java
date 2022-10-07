@@ -3,9 +3,9 @@ package com.team6.onandthefarmsnsservice.controller;
 import com.team6.onandthefarmsnsservice.dto.FeedInfoDto;
 import com.team6.onandthefarmsnsservice.service.FeedService;
 import com.team6.onandthefarmsnsservice.utils.BaseResponse;
-import com.team6.onandthefarmsnsservice.vo.FeedDetailResponse;
-import com.team6.onandthefarmsnsservice.vo.FeedUploadProductRequest;
-import com.team6.onandthefarmsnsservice.vo.FeedUploadRequest;
+import com.team6.onandthefarmsnsservice.vo.feed.FeedDetailResponse;
+import com.team6.onandthefarmsnsservice.vo.feed.FeedUploadProductRequest;
+import com.team6.onandthefarmsnsservice.vo.feed.FeedUploadRequest;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -70,7 +70,6 @@ public class YwController {
             return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        //태그도 보내줘야함
         FeedDetailResponse feedDetailResponse = feedService.findFeedDetail(feedId);
 
         BaseResponse baseResponse = BaseResponse.builder()

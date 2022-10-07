@@ -21,6 +21,10 @@ public class FeedComment {
     @JoinColumn(name = "feedId")
     private Feed feed;
 
+    private Long memberId;
+
+    private String memberRole;
+
     private String feedCommentContent;
 
     private String feedCommentCreateAt;

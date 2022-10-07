@@ -12,14 +12,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.team6.onandthefarmsnsservice.dto.FeedDto;
 import com.team6.onandthefarmsnsservice.dto.profile.ProfileFeedDto;
 import com.team6.onandthefarmsnsservice.dto.profile.ProfileMainFeedDto;
 import com.team6.onandthefarmsnsservice.dto.profile.ProfileMainScrapDto;
 import com.team6.onandthefarmsnsservice.dto.profile.ProfileMainWishDto;
 import com.team6.onandthefarmsnsservice.service.FeedService;
 import com.team6.onandthefarmsnsservice.utils.BaseResponse;
-import com.team6.onandthefarmsnsservice.vo.FeedRequest;
 import com.team6.onandthefarmsnsservice.vo.FeedResponse;
 import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainFeedRequest;
 import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainFeedResponse;

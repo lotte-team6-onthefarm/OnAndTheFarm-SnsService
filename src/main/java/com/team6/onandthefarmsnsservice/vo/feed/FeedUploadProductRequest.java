@@ -1,6 +1,6 @@
-package com.team6.onandthefarmsnsservice.vo;
+package com.team6.onandthefarmsnsservice.vo.feed;
 
-import com.team6.onandthefarmsnsservice.vo.imageProduct.ImageProductInfo;
+import com.team6.onandthefarmsnsservice.vo.feed.imageProduct.ImageProductInfo;
 import lombok.*;
 
 import java.util.List;
