@@ -13,10 +13,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.team6.onandthefarmsnsservice.dto.profile.ProfileMainFeedDto;
+import com.team6.onandthefarmsnsservice.dto.profile.ProfileMainScrapDto;
 import com.team6.onandthefarmsnsservice.service.FeedService;
 import com.team6.onandthefarmsnsservice.utils.BaseResponse;
 import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainFeedRequest;
 import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainFeedResponse;
+import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainScrapRequest;
+import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainScrapResponse;
 
 import io.swagger.annotations.ApiOperation;
 
@@ -43,6 +46,23 @@ public class ProfileController {
 				.httpStatus(HttpStatus.OK)
 				.message("OK")
 				.data(feedList)
+				.build();
+
+		return new ResponseEntity(response,HttpStatus.OK);
+	}
+
+	@GetMapping("/profile/main-scrap")
+	@ApiOperation(value = "프로필 메인 화면 scrap 부분 조회")
+	public ResponseEntity<BaseResponse<List<ProfileMainFeedResponse>>> getProfileMainScrap(@RequestBody ProfileMainScrapRequest profileMainScrapRequest){
+		ModelMapper modelMapper = new ModelMapper();
+		modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+		ProfileMainScrapDto profileMainScrapDto = modelMapper.map(profileMainScrapRequest, ProfileMainScrapDto.class);
+		List<ProfileMainScrapResponse> scrapList = feedService.findByMemberScrapList(profileMainScrapDto);
+
+		BaseResponse response = BaseResponse.builder()
+				.httpStatus(HttpStatus.OK)
+				.message("OK")
+				.data(scrapList)
 				.build();
 
 		return new ResponseEntity(response,HttpStatus.OK);
