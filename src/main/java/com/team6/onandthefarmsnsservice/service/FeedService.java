@@ -42,5 +42,7 @@ public interface FeedService {
     List<ProfileMainWishResponse> findByMemberWishList(ProfileMainWishDto profileMainWishDto);
 
     List<FeedResponse> findByRecentFeedListAndMemberId(ProfileFeedDto profileFeedDto);
-    
+
+    List<FeedResponse> findByRecentScrapFeedListAndMemberId(ProfileFeedDto profileFeedDto);
+
 }

@@ -454,4 +454,20 @@ public class FeedServiceImpl implements FeedService {
 
 		return getResponses(size, startIndex, feedList);
 	}
+	public List<FeedResponse> findByRecentScrapFeedListAndMemberId(ProfileFeedDto profileFeedDto) {
+
+		List<Scrap> scrapList = scrapRepository.findScrapListByMemberId(profileFeedDto.getMemberId());
+		List<Feed> feedList = new ArrayList<>();
+		for (Scrap scrap : scrapList) {
+			feedList.add(scrap.getFeed());
+		}
+
+		int startIndex = profileFeedDto.getPageNumber() * pageContentNumber;
+
+		int size = feedList.size();
+
+		return getResponses(size, startIndex, feedList);
+	}
+
+
 }
