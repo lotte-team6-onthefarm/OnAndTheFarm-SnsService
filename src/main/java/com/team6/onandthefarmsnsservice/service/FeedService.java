@@ -3,11 +3,13 @@ package com.team6.onandthefarmsnsservice.service;
 
 import com.team6.onandthefarmsnsservice.dto.FeedDto;
 import com.team6.onandthefarmsnsservice.dto.profile.ProfileMainFeedDto;
+import com.team6.onandthefarmsnsservice.dto.profile.ProfileMainScrapDto;
 import com.team6.onandthefarmsnsservice.vo.FeedDetailResponse;
 import com.team6.onandthefarmsnsservice.vo.FeedResponse;
 import com.team6.onandthefarmsnsservice.dto.FeedInfoDto;
 import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainFeedRequest;
 import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainFeedResponse;
+import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainScrapResponse;
 
 import org.springframework.web.multipart.MultipartFile;
 
@@ -34,5 +36,7 @@ public interface FeedService {
     Boolean upViewCount(Long feedId);
 
     List<ProfileMainFeedResponse> findByMemberFeedList(ProfileMainFeedDto profileMainFeedDto);
+
+    List<ProfileMainScrapResponse> findByMemberScrapList(ProfileMainScrapDto profileMainScrapDto);
     
 }

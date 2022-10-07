@@ -3,6 +3,7 @@ package com.team6.onandthefarmsnsservice.service;
 import com.team6.onandthefarmsnsservice.dto.FeedDto;
 import com.team6.onandthefarmsnsservice.dto.FeedInfoDto;
 import com.team6.onandthefarmsnsservice.dto.profile.ProfileMainFeedDto;
+import com.team6.onandthefarmsnsservice.dto.profile.ProfileMainScrapDto;
 import com.team6.onandthefarmsnsservice.entity.*;
 import com.team6.onandthefarmsnsservice.feignclient.MemberServiceClient;
 import com.team6.onandthefarmsnsservice.repository.*;
@@ -11,6 +12,7 @@ import com.team6.onandthefarmsnsservice.vo.FeedResponse;
 import com.team6.onandthefarmsnsservice.vo.imageProduct.ImageInfo;
 import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainFeedRequest;
 import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainFeedResponse;
+import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainScrapResponse;
 import com.team6.onandthefarmsnsservice.vo.user.Following;
 import com.team6.onandthefarmsnsservice.vo.user.Seller;
 import com.team6.onandthefarmsnsservice.vo.user.User;
@@ -392,11 +394,23 @@ public class FeedServiceImpl implements FeedService{
                     .feedId(feed.getFeedId())
                     .feedImg(feedThumbnailImage)
                     .build();
-
             responseList.add(profileMainFeedResponse);
         }
-
         return responseList;
     }
 
+    @Override
+    public List<ProfileMainScrapResponse> findByMemberScrapList(ProfileMainScrapDto profileMainScrapDto){
+        Long memberId = profileMainScrapDto.getMemberId();
+        List<ProfileMainScrapResponse> responseList = new ArrayList<>();
+        List<Scrap> scrapList = scrapRepository.findScrapListByMemberId(memberId);
+        for (Scrap scrap : scrapList) {
+            ProfileMainScrapResponse profileMainScrapResponse = ProfileMainScrapResponse.builder()
+                    .feedId(scrap.getFeed().getFeedId())
+                    .feedImg(feedImageRepository.findByFeed(scrap.getFeed()).get(0))
+                    .build();
+            responseList.add(profileMainScrapResponse);
+        }
+        return responseList;
+    }
 }
