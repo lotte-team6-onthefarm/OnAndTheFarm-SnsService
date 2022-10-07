@@ -2,6 +2,7 @@ package com.team6.onandthefarmsnsservice.service;
 
 
 import com.team6.onandthefarmsnsservice.dto.FeedDto;
+import com.team6.onandthefarmsnsservice.dto.profile.ProfileFeedDto;
 import com.team6.onandthefarmsnsservice.dto.profile.ProfileMainFeedDto;
 import com.team6.onandthefarmsnsservice.dto.profile.ProfileMainScrapDto;
 import com.team6.onandthefarmsnsservice.dto.profile.ProfileMainWishDto;
@@ -39,5 +40,7 @@ public interface FeedService {
     List<ProfileMainScrapResponse> findByMemberScrapList(ProfileMainScrapDto profileMainScrapDto);
 
     List<ProfileMainWishResponse> findByMemberWishList(ProfileMainWishDto profileMainWishDto);
+
+    List<FeedResponse> findByRecentFeedListAndMemberId(ProfileFeedDto profileFeedDto);
     
 }

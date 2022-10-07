@@ -12,17 +12,22 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.team6.onandthefarmsnsservice.dto.FeedDto;
+import com.team6.onandthefarmsnsservice.dto.profile.ProfileFeedDto;
 import com.team6.onandthefarmsnsservice.dto.profile.ProfileMainFeedDto;
 import com.team6.onandthefarmsnsservice.dto.profile.ProfileMainScrapDto;
 import com.team6.onandthefarmsnsservice.dto.profile.ProfileMainWishDto;
 import com.team6.onandthefarmsnsservice.service.FeedService;
 import com.team6.onandthefarmsnsservice.utils.BaseResponse;
+import com.team6.onandthefarmsnsservice.vo.FeedRequest;
+import com.team6.onandthefarmsnsservice.vo.FeedResponse;
 import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainFeedRequest;
 import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainFeedResponse;
 import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainScrapRequest;
 import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainScrapResponse;
 import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainWishRequest;
 import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainWishResponse;
+import com.team6.onandthefarmsnsservice.vo.profile.product.ProfileFeedRequest;
 
 import io.swagger.annotations.ApiOperation;
 
@@ -84,6 +89,24 @@ public class ProfileController {
 				.httpStatus(HttpStatus.OK)
 				.message("OK")
 				.data(wishList)
+				.build();
+
+		return new ResponseEntity(response,HttpStatus.OK);
+	}
+
+	@GetMapping("/profile/feed")
+	@ApiOperation(value = "프로필 피드 전체보기 조회")
+	public ResponseEntity<BaseResponse<List<FeedResponse>>> getProfileFeedResponse(@RequestBody ProfileFeedRequest profileFeedRequest) {
+		ModelMapper modelMapper = new ModelMapper();
+		modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+		ProfileFeedDto profileFeedDto = modelMapper.map(profileFeedRequest, ProfileFeedDto.class);
+
+		List<FeedResponse> responses = feedService.findByRecentFeedListAndMemberId(profileFeedDto);
+
+		BaseResponse response = BaseResponse.builder()
+				.httpStatus(HttpStatus.OK)
+				.message("OK")
+				.data(responses)
 				.build();
 
 		return new ResponseEntity(response,HttpStatus.OK);
