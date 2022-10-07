@@ -14,12 +14,15 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.team6.onandthefarmsnsservice.dto.profile.ProfileMainFeedDto;
 import com.team6.onandthefarmsnsservice.dto.profile.ProfileMainScrapDto;
+import com.team6.onandthefarmsnsservice.dto.profile.ProfileMainWishDto;
 import com.team6.onandthefarmsnsservice.service.FeedService;
 import com.team6.onandthefarmsnsservice.utils.BaseResponse;
 import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainFeedRequest;
 import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainFeedResponse;
 import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainScrapRequest;
 import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainScrapResponse;
+import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainWishRequest;
+import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainWishResponse;
 
 import io.swagger.annotations.ApiOperation;
 
@@ -63,6 +66,24 @@ public class ProfileController {
 				.httpStatus(HttpStatus.OK)
 				.message("OK")
 				.data(scrapList)
+				.build();
+
+		return new ResponseEntity(response,HttpStatus.OK);
+	}
+
+	@GetMapping("/profile/main-wish")
+	@ApiOperation(value = "프로필 메인 화면 scrap 부분 조회")
+	public ResponseEntity<BaseResponse<List<ProfileMainWishResponse>>> getProfileMainWish(@RequestBody ProfileMainWishRequest profileMainWishRequest){
+		ModelMapper modelMapper = new ModelMapper();
+		modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+		ProfileMainWishDto profileMainWishDto = modelMapper.map(profileMainWishRequest, ProfileMainWishDto.class);
+
+		List<ProfileMainWishResponse> wishList = feedService.findByMemberWishList(profileMainWishDto);
+
+		BaseResponse response = BaseResponse.builder()
+				.httpStatus(HttpStatus.OK)
+				.message("OK")
+				.data(wishList)
 				.build();
 
 		return new ResponseEntity(response,HttpStatus.OK);

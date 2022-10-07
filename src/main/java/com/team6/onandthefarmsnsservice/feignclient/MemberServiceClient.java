@@ -22,5 +22,4 @@ public interface MemberServiceClient {
 
     @GetMapping("/api/user/member-service/following/{member-no}")
     public List<Following> findByFollowingMemberId(@PathVariable("member-no")Long memberId);
-
 }
