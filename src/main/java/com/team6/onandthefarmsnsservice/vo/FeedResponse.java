@@ -30,4 +30,6 @@ public class FeedResponse {
 
     private Integer feedCommentCount;
 
+    private String feedContent;
+
 }

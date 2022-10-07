@@ -115,6 +115,9 @@ public class FeedServiceImpl implements FeedService{
         List<Following> followers = memberServiceClient.findByFollowingMemberId(memberId);
 
         for(Following follower : followers){
+            /**
+             * follower follower멤버Id로 그사람이 가진 feed들을 모두 가져온다
+             */
             Feed feed = feedRepository.findByMemberId(follower.getFollowerMemberId());
             feedList.add(feed);
         }
@@ -163,6 +166,7 @@ public class FeedServiceImpl implements FeedService{
                         .feedViewCount(feed.getFeedViewCount())
                         .memberId(feed.getMemberId())
                         .memberRole(Integer.valueOf(feed.getMemberRole()))
+                        .feedContent(feed.getFeedContent())
                         .build();
 
                 User user = null;
@@ -193,6 +197,7 @@ public class FeedServiceImpl implements FeedService{
                     .feedViewCount(feed.getFeedViewCount())
                     .memberId(feed.getMemberId())
                     .memberRole(Integer.valueOf(feed.getMemberRole()))
+                    .feedContent(feed.getFeedContent())
                     .build();
 
             User user = null;
