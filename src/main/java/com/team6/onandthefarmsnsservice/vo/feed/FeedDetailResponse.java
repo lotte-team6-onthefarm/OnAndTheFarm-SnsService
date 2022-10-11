@@ -38,4 +38,10 @@ public class FeedDetailResponse {
 
     private List<FeedTag> feedTag;
 
+    private Boolean isModifiable;
+
+    public FeedDetailResponse(){
+        this.isModifiable = false;
+    }
+
 }

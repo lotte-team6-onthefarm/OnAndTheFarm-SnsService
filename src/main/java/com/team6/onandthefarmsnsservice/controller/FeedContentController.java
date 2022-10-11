@@ -64,7 +64,7 @@ public class FeedContentController {
 
     @GetMapping("/detail")
     @ApiOperation("sns 피드 상세페이지")
-    public ResponseEntity<BaseResponse<FeedDetailResponse>> findFeedDetail(@RequestParam Long feedId){
+    public ResponseEntity<BaseResponse<FeedDetailResponse>> findFeedDetail(@ApiIgnore Principal principal, @RequestParam Long feedId){
 
         //조회수 증가
         Boolean isUpViewCount = feedService.upViewCount(feedId);
@@ -72,7 +72,8 @@ public class FeedContentController {
             return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        FeedDetailResponse feedDetailResponse = feedService.findFeedDetail(feedId);
+        Long memberId = Long.parseLong(principal.getName());
+        FeedDetailResponse feedDetailResponse = feedService.findFeedDetail(feedId, memberId);
 
         BaseResponse baseResponse = BaseResponse.builder()
                 .httpStatus(HttpStatus.OK)

@@ -35,7 +35,7 @@ public interface FeedService {
 
     List<AddableProductResponse> findAddableProducts(Long memberId, String memberRole);
 
-    FeedDetailResponse findFeedDetail(Long feedId);
+    FeedDetailResponse findFeedDetail(Long feedId, Long memberId);
 
     Boolean upViewCount(Long feedId);
 

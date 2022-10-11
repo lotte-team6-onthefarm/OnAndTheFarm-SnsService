@@ -358,7 +358,7 @@ public class FeedServiceImpl implements FeedService {
 	 * @return FeedDetailResponse
 	 */
 	@Override
-	public FeedDetailResponse findFeedDetail(Long feedId) {
+	public FeedDetailResponse findFeedDetail(Long feedId, Long memberId) {
 
 		FeedDetailResponse feedDetailResponse = null;
 
@@ -405,6 +405,10 @@ public class FeedServiceImpl implements FeedService {
 					.feedImageProductList(imageProductInfoList)
 					.feedTag(feedTagList)
 					.build();
+
+			if(savedFeed.get().getMemberId() == memberId){
+				feedDetailResponse.setIsModifiable(true);
+			}
 		}
 
 		return feedDetailResponse;
