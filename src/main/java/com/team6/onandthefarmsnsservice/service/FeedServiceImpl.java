@@ -8,8 +8,10 @@ import com.team6.onandthefarmsnsservice.dto.profile.ProfileMainScrapDto;
 import com.team6.onandthefarmsnsservice.dto.profile.ProfileMainWishDto;
 import com.team6.onandthefarmsnsservice.entity.*;
 import com.team6.onandthefarmsnsservice.feignclient.MemberServiceClient;
+import com.team6.onandthefarmsnsservice.feignclient.OrderServiceClient;
 import com.team6.onandthefarmsnsservice.feignclient.ProductServiceClient;
 import com.team6.onandthefarmsnsservice.repository.*;
+import com.team6.onandthefarmsnsservice.vo.feed.AddableProductResponse;
 import com.team6.onandthefarmsnsservice.vo.feed.FeedDetailResponse;
 import com.team6.onandthefarmsnsservice.vo.FeedResponse;
 import com.team6.onandthefarmsnsservice.vo.feed.imageProduct.ImageInfo;
@@ -48,6 +50,8 @@ public class FeedServiceImpl implements FeedService {
 
 	private final ProductServiceClient productServiceClient;
 
+	private final OrderServiceClient orderServiceClient;
+
 	private final FeedImageRepository feedImageRepository;
 
 	private final FeedLikeRepository feedLikeRepository;
@@ -66,6 +70,7 @@ public class FeedServiceImpl implements FeedService {
 	public FeedServiceImpl(FeedRepository feedRepository,
 			MemberServiceClient memberServiceClient,
 			ProductServiceClient productServiceClient,
+		    OrderServiceClient orderServiceClient,
 			FeedImageRepository feedImageRepository,
 			FeedLikeRepository feedLikeRepository,
 			ScrapRepository scrapRepository,
@@ -79,6 +84,7 @@ public class FeedServiceImpl implements FeedService {
 		this.feedRepository = feedRepository;
 		this.memberServiceClient = memberServiceClient;
 		this.productServiceClient = productServiceClient;
+		this.orderServiceClient = orderServiceClient;
 		this.feedImageRepository = feedImageRepository;
 		this.feedImageProductRepository = feedImageProductRepository;
 		this.feedTagRepository = feedTagRepository;
@@ -324,6 +330,26 @@ public class FeedServiceImpl implements FeedService {
 		}
 
 		return savedFeed.getFeedId();
+	}
+
+	/**
+	 * 피드 업로드할 때 추가 가능한 상품을 조회하는 메서드
+	 * @param memberId, memberRole
+	 * @return List<AddableProductResponse>
+	 */
+	@Override
+	public List<AddableProductResponse> findAddableProducts(Long memberId, String memberRole) {
+
+		List<AddableProductResponse> addableProductList = new ArrayList<>();
+
+		if(memberRole.equals("user")){
+			addableProductList = orderServiceClient.findAddableProductList(memberId);
+		}
+		else if(memberRole.equals("seller")){
+			addableProductList = productServiceClient.findAddableProductList(memberId);
+		}
+
+		return addableProductList;
 	}
 
 	/**
