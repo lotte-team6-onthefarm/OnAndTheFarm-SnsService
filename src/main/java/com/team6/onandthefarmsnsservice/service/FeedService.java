@@ -39,6 +39,8 @@ public interface FeedService {
 
     Boolean upViewCount(Long feedId);
 
+    Boolean upShareCount(Long feedId);
+
     List<ProfileMainFeedResponse> findByMemberFeedList(ProfileMainFeedDto profileMainFeedDto);
 
     List<ProfileMainScrapResponse> findByMemberScrapList(ProfileMainScrapDto profileMainScrapDto);
