@@ -20,4 +20,10 @@ public class CommentDetailResponse {
     private String feedCommentCreateAt;
 
     private String feedCommentModifiedAt;
+
+    private Boolean isModifiable;
+
+    public CommentDetailResponse(){
+        this.isModifiable = false;
+    }
 }
