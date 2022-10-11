@@ -43,12 +43,13 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public List<CommentDetailResponse> findCommentDetail(Long feedId) {
+    public List<CommentDetailResponse> findCommentDetail(Long feedId, Long memberId) {
 
         List<CommentDetailResponse> commentDetailList = new ArrayList<>();
 
         List<FeedComment> feedCommentList = feedCommentRepository.findByFeedId(feedId);
         for(FeedComment feedComment : feedCommentList){
+
             CommentDetailResponse commentDetail = CommentDetailResponse.builder()
                     .memberId(feedComment.getMemberId())
                     .memberRole(feedComment.getMemberRole())
@@ -57,6 +58,10 @@ public class CommentServiceImpl implements CommentService {
                     .feedCommentCreateAt(feedComment.getFeedCommentCreateAt())
                     .feedCommentModifiedAt(feedComment.getFeedCommentModifiedAt())
                     .build();
+
+            if(feedComment.getMemberId() == memberId){
+                commentDetail.setIsModifiable(true);
+            }
 
             if(feedComment.getMemberRole().equals("user")){
                 User user = memberServiceClient.findByUserId(feedComment.getMemberId());
@@ -95,10 +100,14 @@ public class CommentServiceImpl implements CommentService {
         Optional<FeedComment> feedComment = feedCommentRepository.findById(commentInfoDto.getFeedCommentId());
 
         if(feedComment.isPresent()){
-            feedComment.get().setFeedCommentContent(commentInfoDto.getFeedCommentContent());
-            feedComment.get().setFeedCommentModifiedAt(dateUtils.transDate(env.getProperty("dateutils.format")));
+            if(feedComment.get().getMemberId() == commentInfoDto.getMemberId()) {
+                feedComment.get().setFeedCommentContent(commentInfoDto.getFeedCommentContent());
+                feedComment.get().setFeedCommentModifiedAt(dateUtils.transDate(env.getProperty("dateutils.format")));
+
+                return feedComment.get().getFeedCommnetId();
+            }
         }
 
-        return feedComment.get().getFeedCommnetId();
+        return null;
     }
 }

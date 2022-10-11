@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface CommentService {
 
-    List<CommentDetailResponse> findCommentDetail(Long feedId);
+    List<CommentDetailResponse> findCommentDetail(Long feedId, Long memberId);
 
     Long addComment(CommentInfoDto commentInfoDto);
 

@@ -88,9 +88,10 @@ public class CommentController {
 
     @GetMapping
     @ApiOperation("피드 댓글 조회")
-    public ResponseEntity<BaseResponse<List<CommentDetailResponse>>> findComment(@RequestParam Long feedId){
+    public ResponseEntity<BaseResponse<List<CommentDetailResponse>>> findComment(@ApiIgnore Principal principal, @RequestParam Long feedId){
 
-        List<CommentDetailResponse> commentList = commentService.findCommentDetail(feedId);
+        Long memberId = Long.parseLong(principal.getName());
+        List<CommentDetailResponse> commentList = commentService.findCommentDetail(feedId, memberId);
 
         BaseResponse baseResponse = BaseResponse.builder()
                 .httpStatus(HttpStatus.OK)
