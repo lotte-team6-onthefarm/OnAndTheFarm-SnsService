@@ -10,4 +10,5 @@ import lombok.Data;
 public class ProfileMainScrapResponse {
 	private Long feedId;
 	private FeedImage feedImg;
+	private String memberName;
 }

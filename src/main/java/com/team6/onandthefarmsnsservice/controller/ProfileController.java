@@ -60,7 +60,7 @@ public class ProfileController {
 
 	@GetMapping("/profile/main-scrap")
 	@ApiOperation(value = "프로필 메인 화면 scrap 부분 조회")
-	public ResponseEntity<BaseResponse<List<ProfileMainFeedResponse>>> getProfileMainScrap(@RequestBody ProfileMainScrapRequest profileMainScrapRequest){
+	public ResponseEntity<BaseResponse<List<ProfileMainScrapResponse>>> getProfileMainScrap(@RequestBody ProfileMainScrapRequest profileMainScrapRequest){
 		ModelMapper modelMapper = new ModelMapper();
 		modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
 		ProfileMainScrapDto profileMainScrapDto = modelMapper.map(profileMainScrapRequest, ProfileMainScrapDto.class);

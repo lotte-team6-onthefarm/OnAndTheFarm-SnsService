@@ -15,11 +15,11 @@ import java.util.List;
 @FeignClient(name = "member-service")
 public interface MemberServiceClient {
     @GetMapping("/api/user/member-service/user/{user-no}")
-    public User findByUserId(@PathVariable("user-no")Long userId);
+    User findByUserId(@PathVariable("user-no")Long userId);
 
     @GetMapping("/api/seller/member-service/seller/{seller-no}")
-    public Seller findBySellerId(@PathVariable("seller-no")Long sellerId);
+    Seller findBySellerId(@PathVariable("seller-no")Long sellerId);
 
     @GetMapping("/api/user/member-service/following/{member-no}")
-    public List<Following> findByFollowingMemberId(@PathVariable("member-no")Long memberId);
+    List<Following> findByFollowingMemberId(@PathVariable("member-no")Long memberId);
 }
