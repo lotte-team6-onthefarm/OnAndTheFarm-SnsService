@@ -466,6 +466,16 @@ public class FeedServiceImpl implements FeedService {
 					.feedId(scrap.getFeed().getFeedId())
 					.feedImg(feedImageRepository.findByFeed(scrap.getFeed()).get(0))
 					.build();
+
+			Optional<Feed> savedFeed = feedRepository.findById(scrap.getFeed().getFeedId());
+			if(savedFeed.get().getMemberRole().equals("user")) {
+				User user = memberServiceClient.findByUserId(savedFeed.get().getMemberId());
+				profileMainScrapResponse.setMemberName(user.getUserName());
+			}
+			else{
+				Seller seller = memberServiceClient.findBySellerId(savedFeed.get().getMemberId());
+				profileMainScrapResponse.setMemberName(seller.getSellerName());
+			}
 			responseList.add(profileMainScrapResponse);
 		}
 		return responseList;
