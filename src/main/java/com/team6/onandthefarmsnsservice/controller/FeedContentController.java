@@ -235,5 +235,25 @@ public class FeedContentController {
 
         return new ResponseEntity(response,HttpStatus.BAD_REQUEST);
     }
+    @GetMapping("/share")
+    @ApiOperation("sns 피드 공유 시 공유 카운트 업데이트하는 메서드")
+    public ResponseEntity<BaseResponse> upShareCount(@RequestParam Long feedId){
+
+        Boolean isUpShareCount = feedService.upShareCount(feedId);
+
+        BaseResponse baseResponse = BaseResponse.builder()
+                .httpStatus(HttpStatus.OK)
+                .message("up share count success")
+                .build();
+        if(!isUpShareCount){
+            baseResponse = BaseResponse.builder()
+                    .httpStatus(HttpStatus.BAD_REQUEST)
+                    .message("up share count fail")
+                    .build();
+            return new ResponseEntity(baseResponse, HttpStatus.BAD_REQUEST);
+        }
+
+        return new ResponseEntity(baseResponse, HttpStatus.OK);
+    }
 
 }

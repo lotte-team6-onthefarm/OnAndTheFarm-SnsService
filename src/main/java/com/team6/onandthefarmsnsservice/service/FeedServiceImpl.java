@@ -430,6 +430,16 @@ public class FeedServiceImpl implements FeedService {
 	}
 
 	@Override
+	public Boolean upShareCount(Long feedId) {
+		Optional<Feed> savedFeed = feedRepository.findById(feedId);
+		if (savedFeed.isPresent()) {
+			savedFeed.get().setFeedShareCount(savedFeed.get().getFeedShareCount() + 1);
+			return true;
+		}
+		return false;
+	}
+
+	@Override
 	public List<ProfileMainFeedResponse> findByMemberFeedList(ProfileMainFeedDto profileMainFeedDto) {
 		Long memberId = profileMainFeedDto.getMemberId();
 
