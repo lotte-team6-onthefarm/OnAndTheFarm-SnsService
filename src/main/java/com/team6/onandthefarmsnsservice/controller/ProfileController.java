@@ -26,13 +26,12 @@ import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainScrapResponse;
 import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainWishRequest;
 import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainWishResponse;
 import com.team6.onandthefarmsnsservice.vo.profile.ProfileFeedRequest;
-import com.team6.onandthefarmsnsservice.vo.profile.product.ProductWishResponse;
 import com.team6.onandthefarmsnsservice.vo.profile.product.WishProductListResponse;
 
 import io.swagger.annotations.ApiOperation;
 
 @RestController
-@RequestMapping("/api/user/feed")
+@RequestMapping("/api/user/sns")
 public class ProfileController {
 	private FeedService feedService;
 
