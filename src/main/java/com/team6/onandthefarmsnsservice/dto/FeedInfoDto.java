@@ -1,13 +1,17 @@
 package com.team6.onandthefarmsnsservice.dto;
 
-import com.team6.onandthefarmsnsservice.vo.feed.imageProduct.ImageProductInfo;
-import lombok.Data;
+import java.util.List;
+
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
+import com.team6.onandthefarmsnsservice.vo.feed.imageProduct.ImageProductInfo;
+
+import lombok.Data;
 
 @Data
 public class FeedInfoDto {
+
+    private Long feedId;
 
     private String feedTitle;
 
@@ -18,5 +22,7 @@ public class FeedInfoDto {
     private List<MultipartFile> feedImgSrcList;
 
     private List<ImageProductInfo> feedProductIdList;
+
+    private List<Long> deleteImg;
 
 }

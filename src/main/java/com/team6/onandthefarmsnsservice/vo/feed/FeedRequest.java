@@ -1,4 +1,4 @@
-package com.team6.onandthefarmsnsservice.vo.profile;
+package com.team6.onandthefarmsnsservice.vo.feed;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,6 +11,6 @@ import lombok.Setter;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProfileFeedRequest {
-    private Long memberId;
+public class FeedRequest {
+    private Integer pageNumber;
 }

@@ -1,10 +1,12 @@
 package com.team6.onandthefarmsnsservice.vo.comment;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
 @Data
 @Builder
+@AllArgsConstructor
 public class CommentDetailResponse {
 
     private Long memberId;
@@ -13,7 +15,9 @@ public class CommentDetailResponse {
     
     private String memberName;
 
-    private Long feedCommnetId;
+    private String memberProfileImg;
+
+    private Long feedCommentId;
 
     private String feedCommentContent;
 
@@ -23,7 +27,4 @@ public class CommentDetailResponse {
 
     private Boolean isModifiable;
 
-    public CommentDetailResponse(){
-        this.isModifiable = false;
-    }
 }

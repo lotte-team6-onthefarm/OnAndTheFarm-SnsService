@@ -1,56 +1,68 @@
 package com.team6.onandthefarmsnsservice.service;
 
+import java.io.IOException;
+import java.util.List;
 
-import com.team6.onandthefarmsnsservice.dto.FeedDto;
+import com.team6.onandthefarmsnsservice.dto.FeedInfoDto;
 import com.team6.onandthefarmsnsservice.dto.profile.ProfileFeedDto;
 import com.team6.onandthefarmsnsservice.dto.profile.ProfileMainFeedDto;
 import com.team6.onandthefarmsnsservice.dto.profile.ProfileMainScrapDto;
 import com.team6.onandthefarmsnsservice.dto.profile.ProfileMainWishDto;
 import com.team6.onandthefarmsnsservice.vo.feed.AddableProductResponse;
 import com.team6.onandthefarmsnsservice.vo.feed.FeedDetailResponse;
-import com.team6.onandthefarmsnsservice.vo.FeedResponse;
-import com.team6.onandthefarmsnsservice.dto.FeedInfoDto;
+import com.team6.onandthefarmsnsservice.vo.feed.FeedResponseResult;
 import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainFeedResponse;
 import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainScrapResponse;
 import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainWishResponse;
-import com.team6.onandthefarmsnsservice.vo.profile.product.WishProductListResponse;
-
-import java.util.List;
+import com.team6.onandthefarmsnsservice.vo.profile.WishProductListResult;
 
 public interface FeedService {
 
-    List<FeedResponse> findByRecentFeedList(FeedDto feedDto);
-
-    List<FeedResponse> findByLikeFeedList(Integer pageNumber);
-
-    List<FeedResponse> findByFollowFeedList(Long memberId,Integer pageNumber);
-
-    List<FeedResponse> findByViewCountFeedList(Integer pageNumber);
-
-    Boolean createFeedLike(Long feedId, Long userId);
-
-    Boolean createFeedScrap(Long feedId, Long userId);
-
-    Long uploadFeed(Long memberId, String memberRole, FeedInfoDto feedInfoDto);
+    Long uploadFeed(Long memberId, String memberRole, FeedInfoDto feedInfoDto) throws IOException;
 
     List<AddableProductResponse> findAddableProducts(Long memberId, String memberRole);
 
-    FeedDetailResponse findFeedDetail(Long feedId, Long memberId);
+    FeedDetailResponse findFeedDetail(Long feedId, Long loginMemberId);
+
+    Long modifyFeed(Long memberId, FeedInfoDto feedInfoDto);
+
+    Long deleteFeed(Long userId, Long feedId);
 
     Boolean upViewCount(Long feedId);
 
     Boolean upShareCount(Long feedId);
 
-    List<ProfileMainFeedResponse> findByMemberFeedList(ProfileMainFeedDto profileMainFeedDto);
+    FeedResponseResult findByFeedTag(String feedTagName, Integer pageNumber, Long loginMemberId);
+
+    Boolean createFeedLike(Long feedId, Long userId);
+
+    Boolean deleteFeedLike(Long feedId, Long memberId);
+
+    Boolean createFeedScrap(Long feedId, Long userId);
+
+    Boolean deleteFeedScrap(Long feedId, Long memberId);
+
+    FeedResponseResult findByRecentFeedList(Integer pageNumer, Long loginMemberId);
+
+    FeedResponseResult findByLikeFeedList(Integer pageNumber, Long loginMemberId);
+
+    FeedResponseResult findByFollowFeedList(Long loginMemberId, Integer pageNumber);
+
+    FeedResponseResult findByViewCountFeedList(Integer pageNumber, Long memberId);
+
+    List<ProfileMainFeedResponse> findFeedListByMember(ProfileMainFeedDto profileMainFeedDto);
 
     List<ProfileMainScrapResponse> findByMemberScrapList(ProfileMainScrapDto profileMainScrapDto);
 
-    List<ProfileMainWishResponse> findByMemberWishList(ProfileMainWishDto profileMainWishDto);
+    List<ProfileMainWishResponse>
+    findWishListByMember(ProfileMainWishDto profileMainWishDto);
 
-    List<WishProductListResponse> findByMemberWishDetailList(ProfileMainWishDto profileMainWishDto);
+    WishProductListResult findByMemberWishDetailList(ProfileMainWishDto profileMainWishDto);
 
-    List<FeedResponse> findByRecentFeedListAndMemberId(ProfileFeedDto profileFeedDto);
+    FeedResponseResult findByRecentFeedListAndMemberId(ProfileFeedDto profileFeedDto);
 
-    List<FeedResponse> findByRecentScrapFeedListAndMemberId(ProfileFeedDto profileFeedDto);
+    FeedResponseResult findByRecentScrapFeedListAndMemberId(ProfileFeedDto profileFeedDto);
+
+    MemberProfileCountResponse getFeedScrapWishCount(MemberProfileDto memberProfileDto);
 
 }

@@ -9,5 +9,4 @@ public class ImageProductInfo {
 
     private Integer imageIndex;
     private Long productId;
-    private Long feedImageId;
 }
