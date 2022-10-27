@@ -14,4 +14,5 @@ import lombok.Setter;
 public class ProfileFeedDto {
     private Long memberId;
     private Integer pageNumber;
+    private Long loginMemberId;
 }

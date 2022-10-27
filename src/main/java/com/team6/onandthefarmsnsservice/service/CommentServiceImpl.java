@@ -1,23 +1,22 @@
 package com.team6.onandthefarmsnsservice.service;
 
-import com.team6.onandthefarmsnsservice.dto.comment.CommentInfoDto;
-import com.team6.onandthefarmsnsservice.entity.Feed;
-import com.team6.onandthefarmsnsservice.entity.FeedComment;
-import com.team6.onandthefarmsnsservice.feignclient.MemberServiceClient;
-import com.team6.onandthefarmsnsservice.repository.FeedCommentRepository;
-import com.team6.onandthefarmsnsservice.repository.FeedRepository;
-import com.team6.onandthefarmsnsservice.utils.DateUtils;
-import com.team6.onandthefarmsnsservice.vo.comment.CommentDetailResponse;
-import com.team6.onandthefarmsnsservice.vo.user.Seller;
-import com.team6.onandthefarmsnsservice.vo.user.User;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import com.team6.onandthefarmsnsservice.dto.comment.CommentInfoDto;
+import com.team6.onandthefarmsnsservice.entity.Feed;
+import com.team6.onandthefarmsnsservice.entity.FeedComment;
+import com.team6.onandthefarmsnsservice.repository.FeedCommentRepository;
+import com.team6.onandthefarmsnsservice.repository.FeedRepository;
+import com.team6.onandthefarmsnsservice.utils.DateUtils;
+import com.team6.onandthefarmsnsservice.vo.comment.CommentDetailResponse;
+import com.team6.onandthefarmsnsservice.vo.user.Seller;
 
 @Service
 @Transactional
@@ -25,19 +24,23 @@ public class CommentServiceImpl implements CommentService {
 
     private final FeedRepository feedRepository;
     private final FeedCommentRepository feedCommentRepository;
-    private final MemberServiceClient memberServiceClient;
+    private final UserRepository userRepository;
+    private final SellerRepository sellerRepository;
+
     private DateUtils dateUtils;
     Environment env;
 
     @Autowired
     public CommentServiceImpl(FeedRepository feedRepository,
                               FeedCommentRepository feedCommentRepository,
-                              MemberServiceClient memberServiceClient,
+                              UserRepository userRepository,
+                              SellerRepository sellerRepository,
                               DateUtils dateUtils,
                               Environment env){
         this.feedRepository = feedRepository;
         this.feedCommentRepository = feedCommentRepository;
-        this.memberServiceClient = memberServiceClient;
+        this.userRepository = userRepository;
+        this.sellerRepository = sellerRepository;
         this.dateUtils = dateUtils;
         this.env = env;
     }
@@ -53,10 +56,11 @@ public class CommentServiceImpl implements CommentService {
             CommentDetailResponse commentDetail = CommentDetailResponse.builder()
                     .memberId(feedComment.getMemberId())
                     .memberRole(feedComment.getMemberRole())
-                    .feedCommnetId(feedComment.getFeedCommnetId())
+                    .feedCommentId(feedComment.getFeedCommnetId())
                     .feedCommentContent(feedComment.getFeedCommentContent())
                     .feedCommentCreateAt(feedComment.getFeedCommentCreateAt())
                     .feedCommentModifiedAt(feedComment.getFeedCommentModifiedAt())
+                    .isModifiable(false)
                     .build();
 
             if(feedComment.getMemberId() == memberId){
@@ -64,12 +68,14 @@ public class CommentServiceImpl implements CommentService {
             }
 
             if(feedComment.getMemberRole().equals("user")){
-                User user = memberServiceClient.findByUserId(feedComment.getMemberId());
-                commentDetail.setMemberName(user.getUserName());
+                Optional<User> user = userRepository.findById(feedComment.getMemberId());
+                commentDetail.setMemberName(user.get().getUserName());
+                commentDetail.setMemberProfileImg(user.get().getUserProfileImg());
             }
             else if(feedComment.getMemberRole().equals("seller")){
-                Seller seller = memberServiceClient.findBySellerId(feedComment.getMemberId());
-                commentDetail.setMemberName(seller.getSellerName());
+                Optional<Seller> seller = sellerRepository.findById(feedComment.getMemberId());
+                commentDetail.setMemberName(seller.get().getSellerName());
+                commentDetail.setMemberProfileImg(seller.get().getSellerProfileImg());
             }
 
             commentDetailList.add(commentDetail);
@@ -89,6 +95,7 @@ public class CommentServiceImpl implements CommentService {
         feedComment.setFeed(feed.get());
         feedComment.setFeedCommentContent(commentInfoDto.getFeedCommentContent());
         feedComment.setFeedCommentCreateAt(dateUtils.transDate(env.getProperty("dateutils.format")));
+        feedComment.setFeedCommentStatus(true);
 
         FeedComment savedFeedComment = feedCommentRepository.save(feedComment);
         return savedFeedComment.getFeedCommnetId();
@@ -108,6 +115,21 @@ public class CommentServiceImpl implements CommentService {
             }
         }
 
+        return null;
+    }
+
+    @Override
+    public Long deleteComment(CommentInfoDto commentInfoDto) {
+
+        Optional<FeedComment> feedComment = feedCommentRepository.findById(commentInfoDto.getFeedCommentId());
+
+        if(feedComment.isPresent()){
+            if(feedComment.get().getMemberId() == commentInfoDto.getMemberId()) {
+                feedComment.get().setFeedCommentStatus(false);
+
+                return feedComment.get().getFeedCommnetId();
+            }
+        }
         return null;
     }
 }

@@ -13,4 +13,5 @@ import lombok.Setter;
 @AllArgsConstructor
 public class ProfileMainWishDto {
 	private Long memberId;
+	private Integer pageNumber;
 }

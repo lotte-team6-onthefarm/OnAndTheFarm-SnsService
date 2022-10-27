@@ -1,9 +1,9 @@
 package com.team6.onandthefarmsnsservice.service;
 
+import java.util.List;
+
 import com.team6.onandthefarmsnsservice.dto.comment.CommentInfoDto;
 import com.team6.onandthefarmsnsservice.vo.comment.CommentDetailResponse;
-
-import java.util.List;
 
 public interface CommentService {
 
@@ -12,4 +12,6 @@ public interface CommentService {
     Long addComment(CommentInfoDto commentInfoDto);
 
     Long modifyComment(CommentInfoDto commentInfoDto);
+
+    Long deleteComment(CommentInfoDto commentInfoDto);
 }
