@@ -20,12 +20,4 @@ public interface MemberServiceClient {
 
     @GetMapping("/api/user/members/member-service/{member-no}")
     List<Following> findByFollowingMemberId(@PathVariable("member-no")Long memberId);
-
-    //구현아직임 -jiny-
-    @GetMapping("/api/user/members/member-service/get-user/{member-no}")
-    UserVo getUserByUserId(@PathVariable("member-no")Long memberId);
-
-    //구현아직임 -jiny-
-    @GetMapping("/api/seller/members/member-service/get-seller/{member-no}")
-    SellerVo getSellerBySellerId(@PathVariable("member-no")Long memberId);
 }

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.team6.onandthefarmsnsservice.utils.S3Upload;
 import com.team6.onandthefarmsnsservice.vo.feed.FeedResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -967,11 +968,11 @@ public class FeedServiceImpl implements FeedService {
 
 			Optional<Feed> savedFeed = feedRepository.findById(scrap.getFeed().getFeedId());
 			if(savedFeed.get().getMemberRole().equals("user")) {
-				UserVo user = memberServiceClient.getUserByUserId(savedFeed.get().getMemberId());
+				UserVo user = memberServiceClient.findByUserId(savedFeed.get().getMemberId());
 				profileMainScrapResponse.setMemberName(user.getUserName());
 			}
 			else{
-				SellerVo seller = memberServiceClient.getSellerBySellerId(savedFeed.get().getMemberId());
+				SellerVo seller = memberServiceClient.findBySellerId(savedFeed.get().getMemberId());
 				profileMainScrapResponse.setMemberName(seller.getSellerName());
 			}
 			responseList.add(profileMainScrapResponse);
