@@ -1,4 +1,4 @@
-package com.team6.onandthefarmsnsservice.vo.feed;
+package com.team6.onandthefarmsnsservice.vo.product;
 
 import lombok.Builder;
 import lombok.Data;

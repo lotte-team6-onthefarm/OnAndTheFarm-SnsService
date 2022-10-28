@@ -12,9 +12,15 @@ import javax.persistence.*;
 @AllArgsConstructor
 @Getter
 @Setter
+@SequenceGenerator(
+        name="FEED_IMAGE_PRODUCT_SEQ_GENERATOR",
+        sequenceName = "FEED_IMAGE_PRODUCT_SEQ",
+        initialValue = 100000, allocationSize = 1
+)
 public class FeedImageProduct {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE,
+            generator = "FEED_IMAGE_PRODUCT_SEQ_GENERATOR")
     private Long feedImageProductId;
 
     @ManyToOne(fetch = FetchType.LAZY)

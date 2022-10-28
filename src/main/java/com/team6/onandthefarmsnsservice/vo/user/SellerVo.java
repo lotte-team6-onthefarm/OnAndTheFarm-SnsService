@@ -12,7 +12,7 @@ public class SellerVo {
 
     private String sellerEmail;
 
-    //private String sellerPassword;
+    private String sellerPassword;
 
     private String sellerZipcode;
 
@@ -33,4 +33,10 @@ public class SellerVo {
     private Boolean sellerIsActived;
 
     private String role;
+
+    private Integer sellerFollowingCount;
+
+    private Integer sellerFollowerCount;
+
+    private String sellerProfileImg;
 }

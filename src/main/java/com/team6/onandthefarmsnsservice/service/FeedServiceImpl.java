@@ -7,8 +7,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+
+import com.team6.onandthefarmsnsservice.dto.profile.*;
+import com.team6.onandthefarmsnsservice.feignclient.OrderServiceClient;
 import com.team6.onandthefarmsnsservice.utils.S3Upload;
 import com.team6.onandthefarmsnsservice.vo.feed.FeedResponse;
+import com.team6.onandthefarmsnsservice.vo.orders.AddableOrderProductResponse;
+import com.team6.onandthefarmsnsservice.vo.product.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
@@ -19,10 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.team6.onandthefarmsnsservice.dto.FeedInfoDto;
-import com.team6.onandthefarmsnsservice.dto.profile.ProfileFeedDto;
-import com.team6.onandthefarmsnsservice.dto.profile.ProfileMainFeedDto;
-import com.team6.onandthefarmsnsservice.dto.profile.ProfileMainScrapDto;
-import com.team6.onandthefarmsnsservice.dto.profile.ProfileMainWishDto;
 import com.team6.onandthefarmsnsservice.entity.Feed;
 import com.team6.onandthefarmsnsservice.entity.FeedImage;
 import com.team6.onandthefarmsnsservice.entity.FeedImageProduct;
@@ -38,21 +39,18 @@ import com.team6.onandthefarmsnsservice.repository.FeedRepository;
 import com.team6.onandthefarmsnsservice.repository.FeedTagRepository;
 import com.team6.onandthefarmsnsservice.repository.ScrapRepository;
 import com.team6.onandthefarmsnsservice.utils.DateUtils;
-import com.team6.onandthefarmsnsservice.vo.feed.AddableProductResponse;
 import com.team6.onandthefarmsnsservice.vo.feed.FeedDetailResponse;
 import com.team6.onandthefarmsnsservice.vo.feed.FeedResponseResult;
 import com.team6.onandthefarmsnsservice.vo.feed.imageProduct.ImageInfo;
 import com.team6.onandthefarmsnsservice.vo.feed.imageProduct.ImageProductInfo;
 import com.team6.onandthefarmsnsservice.vo.feed.imageProduct.ImageProductResponse;
-import com.team6.onandthefarmsnsservice.vo.product.ProductVo;
-import com.team6.onandthefarmsnsservice.vo.product.WishVo;
 import com.team6.onandthefarmsnsservice.vo.profile.MemberProfileCountResponse;
 import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainFeedResponse;
 import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainScrapResponse;
 import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainWishResponse;
 import com.team6.onandthefarmsnsservice.vo.profile.WishProductListResponse;
 import com.team6.onandthefarmsnsservice.vo.profile.WishProductListResult;
-import com.team6.onandthefarmsnsservice.vo.user.Following;
+import com.team6.onandthefarmsnsservice.vo.user.FollowingVo;
 import com.team6.onandthefarmsnsservice.vo.user.SellerVo;
 import com.team6.onandthefarmsnsservice.vo.user.UserVo;
 
@@ -67,26 +65,6 @@ public class FeedServiceImpl implements FeedService {
 
 	private final FeedRepository feedRepository;
 
-//	private final MemberServiceClient memberServiceClient;
-//
-//	private final ProductServiceClient productServiceClient;
-//
-//	private final OrderServiceClient orderServiceClient;
-
-	private final UserRepository userRepository;
-
-	private final SellerRepository sellerRepository;
-
-	private final FollowingRepository followingRepository;
-
-	private final ProductRepository productRepository;
-
-	private final ProductWishRepository productWishRepository;
-
-	private final OrderRepository orderRepository;
-
-	private final OrderProductRepository orderProductRepository;
-
 	private final FeedImageRepository feedImageRepository;
 
 	private final FeedLikeRepository feedLikeRepository;
@@ -99,9 +77,9 @@ public class FeedServiceImpl implements FeedService {
 
 	private final ProductServiceClient productServiceClient;
 
-	private final FeedImageProductRepository feedImageProductRepository;
+	private final OrderServiceClient orderServiceClient;
 
-	private final ReviewRepository reviewRepository;
+	private final FeedImageProductRepository feedImageProductRepository;
 
 	private final S3Upload s3Upload;
 
@@ -118,33 +96,19 @@ public class FeedServiceImpl implements FeedService {
 						   FeedTagRepository feedTagRepository,
 						   MemberServiceClient memberServiceClient,
 						   ProductServiceClient productServiceClient,
-						   UserRepository userRepository,
-						   SellerRepository sellerRepository,
-						   FollowingRepository followingRepository,
-						   ProductRepository productRepository,
-						   ProductWishRepository productWishRepository,
-						   OrderRepository orderRepository,
-						   OrderProductRepository orderProductRepository,
-						   ReviewRepository reviewRepository,
+						   OrderServiceClient orderServiceClient,
 						   S3Upload s3Upload,
 						   DateUtils dateUtils,
 						   Environment env) {
 		this.memberServiceClient = memberServiceClient;
 		this.productServiceClient = productServiceClient;
+		this.orderServiceClient = orderServiceClient;
 		this.feedLikeRepository = feedLikeRepository;
 		this.scrapRepository = scrapRepository;
 		this.feedRepository = feedRepository;
 		this.feedImageRepository = feedImageRepository;
 		this.feedImageProductRepository = feedImageProductRepository;
 		this.feedTagRepository = feedTagRepository;
-		this.userRepository = userRepository;
-		this.sellerRepository = sellerRepository;
-		this.followingRepository = followingRepository;
-		this.productRepository = productRepository;
-		this.productWishRepository = productWishRepository;
-		this.orderRepository = orderRepository;
-		this.orderProductRepository = orderProductRepository;
-		this.reviewRepository = reviewRepository;
 		this.s3Upload = s3Upload;
 		this.dateUtils = dateUtils;
 		this.env = env;
@@ -225,46 +189,58 @@ public class FeedServiceImpl implements FeedService {
 		List<AddableProductResponse> addableProductList = new ArrayList<>();
 
 		if (memberRole.equals("user")) {
-			List<Orders> ordersList = orderRepository.findWithOrderAndOrdersStatus(memberId);
-			List<Long> productIdList = new ArrayList<>();
-			for (Orders orders : ordersList) {
-				//orderproduct받아와서 해당 productID로 조회하기
-				List<OrderProduct> orderProductList = orderProductRepository.findByOrders(orders);
-				for (OrderProduct orderProduct : orderProductList) {
-					if(!productIdList.contains(orderProduct.getProductId())) {
-						productIdList.add(orderProduct.getProductId());
+			List<AddableOrderProductResponse> orderProductList = orderServiceClient.findAddableOrderProductList(memberId);
+			for(AddableOrderProductResponse orderProduct : orderProductList){
+				ProductVo productVo = productServiceClient.findProductByProductId(orderProduct.getProductId());
+				SellerVo sellerVo = memberServiceClient.findBySellerId(orderProduct.getSellerId());
+				AddableProductResponse addableProductResponse = AddableProductResponse.builder()
+						.productId(productVo.getProductId())
+						.productName(productVo.getProductName())
+						.productPrice(productVo.getProductPrice())
+						.productMainImgSrc(productVo.getProductMainImgSrc())
+						.sellerShopName(sellerVo.getSellerShopName())
+						.build();
 
-						Optional<Product> savedProduct = productRepository.findById(orderProduct.getProductId());
-						Product product = savedProduct.get();
-
-						Optional<SellerVo> savedSeller = sellerRepository.findById(product.getSeller().getSellerId());
-
-						AddableProductResponse addableProductResponse = AddableProductResponse.builder()
-								.productId(product.getProductId())
-								.productName(product.getProductName())
-								.productPrice(product.getProductPrice())
-								.productMainImgSrc(product.getProductMainImgSrc())
-								.sellerShopName(savedSeller.get().getSellerShopName())
-								.build();
-
-						addableProductList.add(addableProductResponse);
-					}
-				}
+				addableProductList.add(addableProductResponse);
 			}
+
+//			List<Orders> ordersList = orderRepository.findWithOrderAndOrdersStatus(memberId);
+//			List<Long> productIdList = new ArrayList<>();
+//			for (Orders orders : ordersList) {
+//				//orderproduct받아와서 해당 productID로 조회하기
+//				List<OrderProduct> orderProductList = orderProductRepository.findByOrders(orders);
+//				for (OrderProduct orderProduct : orderProductList) {
+//					if(!productIdList.contains(orderProduct.getProductId())) {
+//						productIdList.add(orderProduct.getProductId());
+//
+//						Optional<Product> savedProduct = productRepository.findById(orderProduct.getProductId());
+//						Product product = savedProduct.get();
+//
+//						Optional<SellerVo> savedSeller = sellerRepository.findById(product.getSeller().getSellerId());
+//
+//						AddableProductResponse addableProductResponse = AddableProductResponse.builder()
+//								.productId(product.getProductId())
+//								.productName(product.getProductName())
+//								.productPrice(product.getProductPrice())
+//								.productMainImgSrc(product.getProductMainImgSrc())
+//								.sellerShopName(savedSeller.get().getSellerShopName())
+//								.build();
+//
+//						addableProductList.add(addableProductResponse);
+//					}
+//				}
+//			}
 		} else if (memberRole.equals("seller")) {
-			Optional<SellerVo> savedSeller = sellerRepository.findById(memberId);
-			SellerVo sellerVo = savedSeller.get();
+			List<ProductVo> productList = productServiceClient.findBySellerId(memberId);
+			SellerVo sellerVo = memberServiceClient.findBySellerId(memberId);
 
-
-			List<Product> productList = productRepository.findBySeller(sellerVo);
-
-			for (Product product : productList) {
+			for (ProductVo product : productList) {
 				AddableProductResponse addableProductResponse = AddableProductResponse.builder()
 						.productId(product.getProductId())
 						.productName(product.getProductName())
 						.productPrice(product.getProductPrice())
 						.productMainImgSrc(product.getProductMainImgSrc())
-						.sellerShopName(savedSeller.get().getSellerShopName())
+						.sellerShopName(sellerVo.getSellerShopName())
 						.build();
 
 				addableProductList.add(addableProductResponse);
@@ -304,15 +280,16 @@ public class FeedServiceImpl implements FeedService {
 				List<FeedImageProduct> savedFeedImageProductList = feedImageProductRepository.findByFeedImage(
 						feedImage);
 				for (FeedImageProduct feedImageProduct : savedFeedImageProductList) {
-					Optional<Product> product = productRepository.findById(feedImageProduct.getProductId());
+					ProductVo productVo = productServiceClient.findProductByProductId(feedImageProduct.getProductId());
+					SellerVo sellerVo = memberServiceClient.findBySellerId(productVo.getSellerId());
 
 					ImageProductResponse imageProductResponse = ImageProductResponse.builder()
 							.feedImageId(feedImage.getFeedImageId())
 							.productId(feedImageProduct.getProductId())
-							.productPrice(product.get().getProductPrice())
-							.productName(product.get().getProductName())
-							.productMainImgSrc(product.get().getProductMainImgSrc())
-							.sellerName(product.get().getSeller().getSellerName())
+							.productPrice(productVo.getProductPrice())
+							.productName(productVo.getProductName())
+							.productMainImgSrc(productVo.getProductMainImgSrc())
+							.sellerName(sellerVo.getSellerName())
 							.build();
 					imageProductInfoList.add(imageProductResponse);
 				}
@@ -347,8 +324,8 @@ public class FeedServiceImpl implements FeedService {
 			}
 
 			// feed 작성자와 로그인한 사용자의 팔로우 여부
-			Optional<Following> followingStatus = followingRepository.findByFollowingMemberIdAndFollowerMemberId(loginMemberId, savedFeed.get().getMemberId());
-			if(followingStatus.isPresent()){
+			FollowingVo followingStatus = memberServiceClient.findByFollowingMemberIdAndFollowerMemberId(loginMemberId, savedFeed.get().getMemberId());
+			if(followingStatus != null){
 				feedDetailResponse.setFollowStatus(true);
 			}
 
@@ -364,17 +341,17 @@ public class FeedServiceImpl implements FeedService {
 
 			// feed 작성자의 이름과 프로필 이미지
 			if (savedFeed.get().getMemberRole().equals("user")) {
-				Optional<UserVo> savedUser = userRepository.findById(savedFeed.get().getMemberId());
+				UserVo userVo = memberServiceClient.findByUserId(savedFeed.get().getMemberId());
 				feedDetailResponse.setMemberId(savedFeed.get().getMemberId());
 				feedDetailResponse.setMemberRole(savedFeed.get().getMemberRole());
-				feedDetailResponse.setMemberName(savedUser.get().getUserName());
-				feedDetailResponse.setMemberProfileImg(savedUser.get().getUserProfileImg());
+				feedDetailResponse.setMemberName(userVo.getUserName());
+				feedDetailResponse.setMemberProfileImg(userVo.getUserProfileImg());
 			} else {
-				Optional<SellerVo> savedSeller = sellerRepository.findById(savedFeed.get().getMemberId());
+				SellerVo sellerVo = memberServiceClient.findBySellerId(savedFeed.get().getMemberId());
 				feedDetailResponse.setMemberId(savedFeed.get().getMemberId());
 				feedDetailResponse.setMemberRole(savedFeed.get().getMemberRole());
-				feedDetailResponse.setMemberName(savedSeller.get().getSellerName());
-				feedDetailResponse.setMemberProfileImg(savedSeller.get().getSellerProfileImg());
+				feedDetailResponse.setMemberName(sellerVo.getSellerName());
+				feedDetailResponse.setMemberProfileImg(sellerVo.getSellerProfileImg());
 			}
 
 		}
@@ -656,9 +633,9 @@ public class FeedServiceImpl implements FeedService {
 	public FeedResponseResult findByFollowFeedList(Long loginMemberId, Integer pageNumber) {
 		List<Feed> feedList = new ArrayList<>();
 
-		List<Following> followers = followingRepository.findByFollowingMemberId(loginMemberId);
+		List<FollowingVo> followers = memberServiceClient.findByFollowingMemberId(loginMemberId);
 
-		for (Following follower : followers) {
+		for (FollowingVo follower : followers) {
 			List<Feed> feedListByFollower = feedRepository.findByMemberId(follower.getFollowerMemberId());
 			for(Feed feed : feedListByFollower) {
 				feedList.add(feed);
@@ -721,8 +698,8 @@ public class FeedServiceImpl implements FeedService {
 		List<FeedResponse> responseList = new ArrayList<>();
 
 		Map<Long,Integer> followMap = new HashMap<>();
-		List<Following> followings = followingRepository.findByFollowingMemberId(loginMemberId);
-		for(Following following : followings){
+		List<FollowingVo> followings = memberServiceClient.findByFollowingMemberId(loginMemberId);
+		for(FollowingVo following : followings){
 			followMap.put(following.getFollowerMemberId(), 1);
 		}
 
@@ -771,13 +748,13 @@ public class FeedServiceImpl implements FeedService {
 					}
 
 					if (feed.getMemberRole().equals("user")) { // 유저
-						Optional<UserVo> user = userRepository.findById(feed.getMemberId());
-						response.setMemberName(user.get().getUserName());
-						response.setMemberProfileImg(user.get().getUserProfileImg());
+						UserVo user = memberServiceClient.findByUserId(feed.getMemberId());
+						response.setMemberName(user.getUserName());
+						response.setMemberProfileImg(user.getUserProfileImg());
 					} else if (feed.getMemberRole().equals("seller")) { // 셀러
-						Optional<SellerVo> seller = sellerRepository.findById(feed.getMemberId());
-						response.setMemberName(seller.get().getSellerName());
-						response.setMemberProfileImg(seller.get().getSellerProfileImg());
+						SellerVo seller = memberServiceClient.findBySellerId(feed.getMemberId());
+						response.setMemberName(seller.getSellerName());
+						response.setMemberProfileImg(seller.getSellerProfileImg());
 					}
 					List<FeedImage> feedImage = feedImageRepository.findByFeed(feed);
 					response.setFeedImageSrc(feedImage.get(0).getFeedImageSrc());
@@ -827,13 +804,13 @@ public class FeedServiceImpl implements FeedService {
 			}
 
 			if (feed.getMemberRole().equals("user")) { // 유저
-				Optional<UserVo> user = userRepository.findById(feed.getMemberId());
-				response.setMemberName(user.get().getUserName());
-				response.setMemberProfileImg(user.get().getUserProfileImg());
+				UserVo user = memberServiceClient.findByUserId(feed.getMemberId());
+				response.setMemberName(user.getUserName());
+				response.setMemberProfileImg(user.getUserProfileImg());
 			} else if (feed.getMemberRole().equals("seller")) { // 셀러
-				Optional<SellerVo> seller = sellerRepository.findById(feed.getMemberId());
-				response.setMemberName(seller.get().getSellerName());
-				response.setMemberProfileImg(seller.get().getSellerProfileImg());
+				SellerVo seller = memberServiceClient.findBySellerId(feed.getMemberId());
+				response.setMemberName(seller.getSellerName());
+				response.setMemberProfileImg(seller.getSellerProfileImg());
 			}
 			List<FeedImage> feedImage = feedImageRepository.findByFeed(feed);
 			response.setFeedImageSrc(feedImage.get(0).getFeedImageSrc());
@@ -849,7 +826,7 @@ public class FeedServiceImpl implements FeedService {
 	 * @Param memberId
 	 * @return List<FeedResponse>
 	 */
-	public WishProductListResult getResponseForWish(int size, int startIndex, List<Wish> wishList){
+	public WishProductListResult getResponseForWish(int size, int startIndex, List<WishListResponse> wishList){
 		WishProductListResult wishProductListResult = new WishProductListResult();
 		List<WishProductListResponse> responseList = new ArrayList<>();
 		if(size < startIndex){
@@ -858,14 +835,14 @@ public class FeedServiceImpl implements FeedService {
 		}
 
 		if(size < startIndex + pageContentNumber) {
-			for (Wish wish : wishList.subList(startIndex, size)) {
+			for (WishListResponse wish : wishList.subList(startIndex, size)) {
 				if (wish != null) {
-					List<Review> reviews = reviewRepository.findReviewByProduct(wish.getProduct());
+					List<ReviewVo> reviews = productServiceClient.findReviewByProductId(wish.getProductId());
 					Long sumOfReviewCount = 0L;
 					int reviewCount = 0;
 					Long reviewRate = 0L;
 					if(reviews.size() != 0) {
-						for (Review review : reviews) {
+						for (ReviewVo review : reviews) {
 							sumOfReviewCount += review.getReviewRate();
 						}
 						reviewCount = reviews.size();
@@ -875,16 +852,16 @@ public class FeedServiceImpl implements FeedService {
 						reviewCount = 0;
 					}
 
-
+					SellerVo sellerVo = memberServiceClient.findBySellerId(wish.getSellerId());
 					WishProductListResponse wishProductListResponse = WishProductListResponse.builder()
-							.productId(wish.getProduct().getProductId())
-							.productName(wish.getProduct().getProductName())
-							.productPrice(wish.getProduct().getProductPrice())
-							.productMainImgSrc(wish.getProduct().getProductMainImgSrc())
-							.productOriginPlace(wish.getProduct().getProductOriginPlace())
-							.productWishCount(wish.getProduct().getProductWishCount())
-							.productStatus(wish.getProduct().getProductStatus())
-							.sellerName(wish.getProduct().getSeller().getSellerName())
+							.productId(wish.getProductId())
+							.productName(wish.getProductName())
+							.productPrice(wish.getProductPrice())
+							.productMainImgSrc(wish.getProductMainImgSrc())
+							.productOriginPlace(wish.getProductOriginPlace())
+							.productWishCount(wish.getProductWishCount())
+							.productStatus(wish.getProductStatus())
+							.sellerName(sellerVo.getSellerName())
 							.reviewRate(reviewRate)
 							.reviewCount(reviewCount)
 							.build();
@@ -896,14 +873,14 @@ public class FeedServiceImpl implements FeedService {
 			return wishProductListResult;
 		}
 
-		for (Wish wish : wishList.subList(startIndex, startIndex + pageContentNumber)) {
+		for (WishListResponse wish : wishList.subList(startIndex, startIndex + pageContentNumber)) {
 			if (wish != null) {
-				List<Review> reviews = reviewRepository.findReviewByProduct(wish.getProduct());
+				List<ReviewVo> reviews = productServiceClient.findReviewByProductId(wish.getProductId());
 				Long sumOfReviewCount = 0L;
 				int reviewCount = 0;
 				Long reviewRate = 0L;
 				if(reviews.size() != 0) {
-					for (Review review : reviews) {
+					for (ReviewVo review : reviews) {
 						sumOfReviewCount += review.getReviewRate();
 					}
 					reviewCount = reviews.size();
@@ -912,15 +889,17 @@ public class FeedServiceImpl implements FeedService {
 					reviewRate = 0L;
 					reviewCount = 0;
 				}
+
+				SellerVo sellerVo = memberServiceClient.findBySellerId(wish.getSellerId());
 				WishProductListResponse wishProductListResponse = WishProductListResponse.builder()
-						.productId(wish.getProduct().getProductId())
-						.productName(wish.getProduct().getProductName())
-						.productPrice(wish.getProduct().getProductPrice())
-						.productMainImgSrc(wish.getProduct().getProductMainImgSrc())
-						.productOriginPlace(wish.getProduct().getProductOriginPlace())
-						.productWishCount(wish.getProduct().getProductWishCount())
-						.productStatus(wish.getProduct().getProductStatus())
-						.sellerName(wish.getProduct().getSeller().getSellerName())
+						.productId(wish.getProductId())
+						.productName(wish.getProductName())
+						.productPrice(wish.getProductPrice())
+						.productMainImgSrc(wish.getProductMainImgSrc())
+						.productOriginPlace(wish.getProductOriginPlace())
+						.productWishCount(wish.getProductWishCount())
+						.productStatus(wish.getProductStatus())
+						.sellerName(sellerVo.getSellerName())
 						.reviewRate(reviewRate)
 						.reviewCount(reviewCount)
 						.build();
@@ -1052,7 +1031,7 @@ public class FeedServiceImpl implements FeedService {
 
 		Long memberId = profileMainWishDto.getMemberId();
 
-		List<Wish> wishList = productWishRepository.findWishListByUserId(memberId);
+		List<WishListResponse> wishList = productServiceClient.findWishProductListByMember(memberId);
 
 		int startIndex = profileMainWishDto.getPageNumber() * pageContentNumber;
 		int size = wishList.size();
@@ -1075,7 +1054,7 @@ public class FeedServiceImpl implements FeedService {
 
 		List<Feed> feedList = feedRepository.findFeedListByMemberId(memberProfileDto.getMemberId());
 		List<Scrap> scrapList = scrapRepository.findScrapListByMemberId(memberProfileDto.getMemberId());
-		List<WishVo> wishList = productWishRepository.findWishListByUserId(memberProfileDto.getMemberId());
+		List<WishListResponse> wishList = productServiceClient.findWishProductListByMember(memberProfileDto.getMemberId());
 
 		MemberProfileCountResponse memberProfileCountResponse = MemberProfileCountResponse.builder()
 				.photoCount(feedList.size())
