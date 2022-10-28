@@ -2,6 +2,7 @@ package com.team6.onandthefarmsnsservice.feignclient;
 
 import com.team6.onandthefarmsnsservice.vo.user.Following;
 import com.team6.onandthefarmsnsservice.vo.user.SellerVo;
+
 import com.team6.onandthefarmsnsservice.vo.user.UserVo;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;

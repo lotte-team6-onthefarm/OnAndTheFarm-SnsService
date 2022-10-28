@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.team6.onandthefarmsnsservice.vo.feed.FeedResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
@@ -251,9 +252,10 @@ public class FeedServiceImpl implements FeedService {
 			}
 		} else if (memberRole.equals("seller")) {
 			Optional<SellerVo> savedSeller = sellerRepository.findById(memberId);
-			SellerVo seller = savedSeller.get();
+			SellerVo sellerVo = savedSeller.get();
 
-			List<Product> productList = productRepository.findBySeller(seller);
+
+			List<Product> productList = productRepository.findBySeller(sellerVo);
 
 			for (Product product : productList) {
 				AddableProductResponse addableProductResponse = AddableProductResponse.builder()
