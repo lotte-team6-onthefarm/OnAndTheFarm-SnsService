@@ -7,6 +7,7 @@ import com.team6.onandthefarmsnsservice.vo.product.ReviewVo;
 import com.team6.onandthefarmsnsservice.vo.product.WishListResponse;
 import com.team6.onandthefarmsnsservice.vo.product.WishVo;
 
+import io.swagger.models.auth.In;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,7 +23,7 @@ public interface ProductServiceClient {
 	List<WishListResponse> findWishProductListByMember(@PathVariable("user-no") Long memberId);
 
 	@GetMapping("/api/user/product/product-service/wish-list/{user-no}")
-	List<WishVo> findWishListByMemberId(PageRequest pageRequest, @PathVariable("user-no")Long memberId);
+	List<WishVo> findWishListByMemberId(Integer pageNumber, PageRequest pageRequest, @PathVariable("user-no")Long memberId);
 
 	@GetMapping("/api/user/product/product-service/product/{product-no}")
 	ProductVo findProductByProductId(@PathVariable("product-no") Long productId);
