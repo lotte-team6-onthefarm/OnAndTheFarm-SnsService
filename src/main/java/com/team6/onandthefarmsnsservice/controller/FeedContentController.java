@@ -28,7 +28,7 @@ public class FeedContentController {
         this.feedService = feedService;
     }
 
-    @PostMapping("/upload")
+    @PostMapping("/feed/upload")
     @ApiOperation("sns 피드 업로드")
     public ResponseEntity<BaseResponse> uploadFeed(@ApiIgnore Principal principal,
                                                    @RequestPart(value = "data", required = false) FeedUploadRequest feedUploadRequest,
@@ -65,7 +65,7 @@ public class FeedContentController {
         return new ResponseEntity(baseResponse, HttpStatus.OK);
     }
 
-    @GetMapping("/detail")
+    @GetMapping("/feed/detail")
     @ApiOperation("sns 피드 상세페이지")
     public ResponseEntity<BaseResponse<FeedDetailResponse>> findFeedDetail(@ApiIgnore Principal principal, @RequestParam Long feedId){
 
@@ -96,7 +96,7 @@ public class FeedContentController {
         return new ResponseEntity(baseResponse, HttpStatus.OK);
     }
 
-    @PutMapping("/modify")
+    @PutMapping("/feed/modify")
     @ApiOperation("sns 피드 수정")
     public ResponseEntity<BaseResponse<FeedDetailResponse>> modifyFeed(@ApiIgnore Principal principal,
                                                                        @RequestPart(value = "data", required = false) FeedModifyRequest feedModifyRequest,
@@ -134,7 +134,7 @@ public class FeedContentController {
         return new ResponseEntity(baseResponse, HttpStatus.OK);
     }
 
-    @PutMapping("/delete")
+    @PutMapping("/feed/delete")
     @ApiOperation("sns 피드 삭제")
     public ResponseEntity<BaseResponse<FeedDetailResponse>> deleteFeed(@ApiIgnore Principal principal, @RequestBody FeedDeleteRequest feedDeleteRequest){
 
@@ -160,7 +160,7 @@ public class FeedContentController {
     }
 
 
-    @GetMapping("/product")
+    @GetMapping("/feed/product")
     @ApiOperation("sns 피드에 등록 가능한 상품 목록 조회")
     public ResponseEntity<BaseResponse<List<AddableProductResponse>>> findAddableProduct(@ApiIgnore Principal principal){
 
@@ -186,7 +186,7 @@ public class FeedContentController {
         return new ResponseEntity(baseResponse, HttpStatus.OK);
     }
 
-    @PutMapping("/share")
+    @PutMapping("/feed/share")
     @ApiOperation("sns 피드 공유 시 공유 카운트 업데이트하는 메서드")
     public ResponseEntity<BaseResponse> upShareCount(@RequestBody FeedRelatedRequest feedRelatedRequest){
 
@@ -207,7 +207,7 @@ public class FeedContentController {
         return new ResponseEntity(baseResponse, HttpStatus.OK);
     }
 
-    @GetMapping("/list/tag")
+    @GetMapping("/feed/list/tag")
     @ApiOperation("tag 별로 조회")
     public ResponseEntity<BaseResponse<FeedResponseResult>> findByFeedTag(@ApiIgnore Principal principal,
                                                                           @RequestParam String feedTagName,
@@ -232,7 +232,7 @@ public class FeedContentController {
      * @param pageNumber
      * @return
      */
-    @GetMapping("/list")
+    @GetMapping("/feed/list/orderby")
     @ApiOperation(value = "메인 피드 최신순 조회")
     public ResponseEntity<BaseResponse<FeedResponseResult>> findByRecentFeedList(@ApiIgnore Principal principal,
                                                                                  @RequestParam Integer pageNumber){
@@ -250,7 +250,7 @@ public class FeedContentController {
         return new ResponseEntity(response,HttpStatus.OK);
     }
 
-    @GetMapping("/list/like")
+    @GetMapping("/feed/list/orderby/like")
     @ApiOperation(value = "메인 피드 좋아요순 조회")
     public ResponseEntity<BaseResponse<FeedResponseResult>> findByLikeFeedList(@ApiIgnore Principal principal,
                                                                                @RequestParam Map<String,String> request){
@@ -270,7 +270,7 @@ public class FeedContentController {
         return new ResponseEntity(response,HttpStatus.OK);
     }
 
-    @GetMapping("/list/follow")
+    @GetMapping("/feed/list/orderby/follow")
     @ApiOperation(value = "메인 피드 팔로우 조회")
     public ResponseEntity<BaseResponse<FeedResponseResult>> findByFollowFeedList(@ApiIgnore Principal principal,
                                                                                  @RequestParam Map<String,String> request){
@@ -290,7 +290,7 @@ public class FeedContentController {
         return new ResponseEntity(response,HttpStatus.OK);
     }
 
-    @GetMapping("/list/view-count")
+    @GetMapping("/feed/list/orderby/view-count")
     @ApiOperation(value = "메인 피드 조회수순 조회")
     public ResponseEntity<BaseResponse<FeedResponseResult>> findByViewCountFeedList(
             @ApiIgnore Principal principal,
@@ -312,7 +312,7 @@ public class FeedContentController {
         return new ResponseEntity(response,HttpStatus.OK);
     }
 
-    @PostMapping("/like")
+    @PostMapping("/feed/like")
     @ApiOperation(value = "피드 좋아요 메서드")
     public ResponseEntity<BaseResponse> createFeedLike(
             @ApiIgnore Principal principal, @RequestBody FeedRelatedRequest feedRelatedRequest){
@@ -324,7 +324,7 @@ public class FeedContentController {
         return responseResult(result);
     }
 
-    @PutMapping("/unlike")
+    @PutMapping("/feed/unlike")
     @ApiOperation(value = "피드 좋아요 취소 메서드")
     public ResponseEntity<BaseResponse> deleteFeedLike(
             @ApiIgnore Principal principal, @RequestBody FeedRelatedRequest feedRelatedRequest){
@@ -336,7 +336,7 @@ public class FeedContentController {
         return responseResult(result);
     }
 
-    @PostMapping("/scrap")
+    @PostMapping("/feed/scrap")
     @ApiOperation(value = "피드 스크랩 메서드")
     public ResponseEntity<BaseResponse> createFeedScrap(
             @ApiIgnore Principal principal, @RequestBody FeedRelatedRequest feedRelatedRequest){
@@ -348,7 +348,7 @@ public class FeedContentController {
         return responseResult(result);
     }
 
-    @PutMapping("/unscrap")
+    @PutMapping("/feed/unscrap")
     @ApiOperation(value = "피드 스크랩 취소 메서드")
     public ResponseEntity<BaseResponse> deleteFeedScrap(
             @ApiIgnore Principal principal, @RequestBody FeedRelatedRequest feedRelatedRequest){
