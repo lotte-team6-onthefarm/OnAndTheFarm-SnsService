@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.team6.onandthefarmsnsservice.vo.feed.FeedResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
@@ -45,7 +46,7 @@ import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainWishResponse;
 import com.team6.onandthefarmsnsservice.vo.profile.WishProductListResponse;
 import com.team6.onandthefarmsnsservice.vo.profile.WishProductListResult;
 import com.team6.onandthefarmsnsservice.vo.user.Following;
-import com.team6.onandthefarmsnsservice.vo.user.Seller;
+import com.team6.onandthefarmsnsservice.vo.user.SellerVo;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -221,7 +222,7 @@ public class FeedServiceImpl implements FeedService {
 						Optional<Product> savedProduct = productRepository.findById(orderProduct.getProductId());
 						Product product = savedProduct.get();
 
-						Optional<Seller> savedSeller = sellerRepository.findById(product.getSeller().getSellerId());
+						Optional<SellerVo> savedSeller = sellerRepository.findById(product.getSeller().getSellerId());
 
 						AddableProductResponse addableProductResponse = AddableProductResponse.builder()
 								.productId(product.getProductId())
@@ -236,10 +237,10 @@ public class FeedServiceImpl implements FeedService {
 				}
 			}
 		} else if (memberRole.equals("seller")) {
-			Optional<Seller> savedSeller = sellerRepository.findById(memberId);
-			Seller seller = savedSeller.get();
+			Optional<SellerVo> savedSeller = sellerRepository.findById(memberId);
+			SellerVo sellerVo = savedSeller.get();
 
-			List<Product> productList = productRepository.findBySeller(seller);
+			List<Product> productList = productRepository.findBySeller(sellerVo);
 
 			for (Product product : productList) {
 				AddableProductResponse addableProductResponse = AddableProductResponse.builder()
@@ -353,7 +354,7 @@ public class FeedServiceImpl implements FeedService {
 				feedDetailResponse.setMemberName(savedUser.get().getUserName());
 				feedDetailResponse.setMemberProfileImg(savedUser.get().getUserProfileImg());
 			} else {
-				Optional<Seller> savedSeller = sellerRepository.findById(savedFeed.get().getMemberId());
+				Optional<SellerVo> savedSeller = sellerRepository.findById(savedFeed.get().getMemberId());
 				feedDetailResponse.setMemberId(savedFeed.get().getMemberId());
 				feedDetailResponse.setMemberRole(savedFeed.get().getMemberRole());
 				feedDetailResponse.setMemberName(savedSeller.get().getSellerName());
@@ -955,7 +956,7 @@ public class FeedServiceImpl implements FeedService {
 				profileMainScrapResponse.setMemberName(user.get().getUserName());
 			}
 			else{
-				Optional<Seller> seller = sellerRepository.findById(savedFeed.get().getMemberId());
+				Optional<SellerVo> seller = sellerRepository.findById(savedFeed.get().getMemberId());
 				profileMainScrapResponse.setMemberName(seller.get().getSellerName());
 			}
 			responseList.add(profileMainScrapResponse);
