@@ -12,8 +12,6 @@ public class UserVo {
 
     private String userEmail;
 
-    //private String userPassword;
-
     private String userZipcode;
 
     private String userAddress;
@@ -40,7 +38,11 @@ public class UserVo {
 
     private String userNaverNumber;
 
-    private String userAppleNumber;
-
     private String userGoogleNumber;
+
+    private Integer userFollowingCount;
+
+    private Integer userFollowerCount;
+
+    private String userProfileImg;
 }

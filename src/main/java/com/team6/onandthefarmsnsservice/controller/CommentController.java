@@ -30,8 +30,10 @@ public class CommentController {
     @ApiOperation("피드 댓글 등록")
     public ResponseEntity<BaseResponse> addComment(@ApiIgnore Principal principal, @RequestBody CommentRequest commentUploadRequest){
 
-        Long memberId = null;
-        String memberRole = null;
+        String[] principalInfo = principal.getName().split(" ");
+        Long memberId = Long.parseLong(principalInfo[0]);
+        String memberRole = principalInfo[1];
+
         CommentInfoDto commentInfoDto = CommentInfoDto.builder()
                 .memberId(memberId)
                 .memberRole(memberRole)
@@ -56,29 +58,64 @@ public class CommentController {
         return new ResponseEntity(baseResponse, HttpStatus.OK);
     }
 
-    @PutMapping
+    @PutMapping("/modify")
     @ApiOperation("피드 댓글 수정")
-    public ResponseEntity<BaseResponse> modifyComment(@ApiIgnore Principal principal, @RequestBody CommentRequest commentModityRequest){
+    public ResponseEntity<BaseResponse> modifyComment(@ApiIgnore Principal principal, @RequestBody CommentRequest commentModifyRequest){
 
-        Long memberId = null;
-        String memberRole = null;
+        String[] principalInfo = principal.getName().split(" ");
+        Long memberId = Long.parseLong(principalInfo[0]);
+        String memberRole = principalInfo[1];
+
         CommentInfoDto commentInfoDto = CommentInfoDto.builder()
                 .memberId(memberId)
                 .memberRole(memberRole)
-                .feedCommentId(commentModityRequest.getFeedCommentId())
-                .feedCommentContent(commentModityRequest.getFeedCommentContent()).build();
+                .feedCommentId(commentModifyRequest.getFeedCommentId())
+                .feedCommentContent(commentModifyRequest.getFeedCommentContent()).build();
 
         Long commentId = commentService.modifyComment(commentInfoDto);
 
         BaseResponse baseResponse = BaseResponse.builder()
                 .httpStatus(HttpStatus.OK)
-                .message("add comment success")
+                .message("modify comment success")
                 .data(commentId)
                 .build();
         if(commentId == null){
             baseResponse = BaseResponse.builder()
                     .httpStatus(HttpStatus.BAD_REQUEST)
-                    .message("add comment fail")
+                    .message("modify comment fail")
+                    .build();
+            return new ResponseEntity(baseResponse, HttpStatus.BAD_REQUEST);
+        }
+
+        return new ResponseEntity(baseResponse, HttpStatus.OK);
+    }
+
+    @PutMapping("/delete")
+    @ApiOperation("피드 댓글 삭제")
+    public ResponseEntity<BaseResponse> deleteComment(@ApiIgnore Principal principal, @RequestBody CommentRequest commentDeleteRequest){
+
+        String[] principalInfo = principal.getName().split(" ");
+        Long memberId = Long.parseLong(principalInfo[0]);
+        String memberRole = principalInfo[1];
+
+        CommentInfoDto commentInfoDto = CommentInfoDto.builder()
+                .memberId(memberId)
+                .memberRole(memberRole)
+                .feedCommentId(commentDeleteRequest.getFeedCommentId())
+                .build();
+
+
+        Long commentId = commentService.deleteComment(commentInfoDto);
+
+        BaseResponse baseResponse = BaseResponse.builder()
+                .httpStatus(HttpStatus.OK)
+                .message("delete comment success")
+                .data(commentId)
+                .build();
+        if(commentId == null){
+            baseResponse = BaseResponse.builder()
+                    .httpStatus(HttpStatus.BAD_REQUEST)
+                    .message("delete comment fail")
                     .build();
             return new ResponseEntity(baseResponse, HttpStatus.BAD_REQUEST);
         }
@@ -90,7 +127,9 @@ public class CommentController {
     @ApiOperation("피드 댓글 조회")
     public ResponseEntity<BaseResponse<List<CommentDetailResponse>>> findComment(@ApiIgnore Principal principal, @RequestParam Long feedId){
 
-        Long memberId = Long.parseLong(principal.getName());
+        String[] principalInfo = principal.getName().split(" ");
+        Long memberId = Long.parseLong(principalInfo[0]);
+
         List<CommentDetailResponse> commentList = commentService.findCommentDetail(feedId, memberId);
 
         BaseResponse baseResponse = BaseResponse.builder()

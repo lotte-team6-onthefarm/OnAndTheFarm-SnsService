@@ -12,9 +12,15 @@ import javax.persistence.*;
 @AllArgsConstructor
 @Getter
 @Setter
+@SequenceGenerator(
+        name="FEED_COMMENT_SEQ_GENERATOR",
+        sequenceName = "FEED_COMMENT_SEQ",
+        initialValue = 100000, allocationSize = 1
+)
 public class FeedComment {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE,
+            generator = "FEED_COMMENT_SEQ_GENERATOR")
     private Long feedCommnetId;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -30,4 +36,6 @@ public class FeedComment {
     private String feedCommentCreateAt;
 
     private String feedCommentModifiedAt;
+
+    private Boolean feedCommentStatus;
 }

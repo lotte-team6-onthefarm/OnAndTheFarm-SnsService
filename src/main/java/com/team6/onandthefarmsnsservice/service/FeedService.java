@@ -4,17 +4,11 @@ import java.io.IOException;
 import java.util.List;
 
 import com.team6.onandthefarmsnsservice.dto.FeedInfoDto;
-import com.team6.onandthefarmsnsservice.dto.profile.ProfileFeedDto;
-import com.team6.onandthefarmsnsservice.dto.profile.ProfileMainFeedDto;
-import com.team6.onandthefarmsnsservice.dto.profile.ProfileMainScrapDto;
-import com.team6.onandthefarmsnsservice.dto.profile.ProfileMainWishDto;
-import com.team6.onandthefarmsnsservice.vo.feed.AddableProductResponse;
+import com.team6.onandthefarmsnsservice.dto.profile.*;
+import com.team6.onandthefarmsnsservice.vo.product.AddableProductResponse;
 import com.team6.onandthefarmsnsservice.vo.feed.FeedDetailResponse;
 import com.team6.onandthefarmsnsservice.vo.feed.FeedResponseResult;
-import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainFeedResponse;
-import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainScrapResponse;
-import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainWishResponse;
-import com.team6.onandthefarmsnsservice.vo.profile.WishProductListResult;
+import com.team6.onandthefarmsnsservice.vo.profile.*;
 
 public interface FeedService {
 

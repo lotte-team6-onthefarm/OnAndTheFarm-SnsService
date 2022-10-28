@@ -1,6 +1,8 @@
 package com.team6.onandthefarmsnsservice.controller;
 
 
+import com.team6.onandthefarmsnsservice.dto.profile.*;
+import com.team6.onandthefarmsnsservice.vo.profile.*;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,17 +14,9 @@ import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 
-import com.team6.onandthefarmsnsservice.dto.profile.ProfileFeedDto;
-import com.team6.onandthefarmsnsservice.dto.profile.ProfileMainFeedDto;
-import com.team6.onandthefarmsnsservice.dto.profile.ProfileMainScrapDto;
-import com.team6.onandthefarmsnsservice.dto.profile.ProfileMainWishDto;
 import com.team6.onandthefarmsnsservice.service.FeedService;
 import com.team6.onandthefarmsnsservice.utils.BaseResponse;
 import com.team6.onandthefarmsnsservice.vo.feed.FeedResponseResult;
-import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainFeedResponse;
-import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainScrapResponse;
-import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainWishResponse;
-import com.team6.onandthefarmsnsservice.vo.profile.WishProductListResult;
 
 @RestController
 @RequestMapping("/api/user/sns")
@@ -212,7 +206,7 @@ public class ProfileController {
 	@GetMapping("/profile/count")
 	@ApiOperation(value = "멤버의 피드 수,스크랩 수, 좋아요 수 조회")
 	public ResponseEntity<BaseResponse<MemberProfileCountResponse>> getFeedScrapLikeCount(@ApiIgnore Principal principal,
-			@RequestParam Map<String, String> request){
+																						  @RequestParam Map<String, String> request){
 
 		MemberProfileDto memberProfileDto = new MemberProfileDto();
 

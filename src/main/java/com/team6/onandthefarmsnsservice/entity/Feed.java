@@ -3,10 +3,7 @@ package com.team6.onandthefarmsnsservice.entity;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 @Builder
 @Slf4j
@@ -15,12 +12,15 @@ import javax.persistence.Id;
 @AllArgsConstructor
 @Getter
 @Setter
-/**
- * memberRoll => 1: user 2: seller
- */
+@SequenceGenerator(
+        name="FEED_SEQ_GENERATOR",
+        sequenceName = "FEED_SEQ",
+        initialValue = 100000, allocationSize = 1
+)
 public class Feed {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE,
+            generator = "FEED_SEQ_GENERATOR")
     private Long feedId;
 
     private Long memberId;
@@ -29,6 +29,7 @@ public class Feed {
 
     private String feedTitle;
 
+    @Column(length=1000)
     private String feedContent;
 
     private Integer feedViewCount;

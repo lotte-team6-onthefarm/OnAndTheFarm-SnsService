@@ -4,6 +4,7 @@ import com.team6.onandthefarmsnsservice.dto.FeedInfoDto;
 import com.team6.onandthefarmsnsservice.service.FeedService;
 import com.team6.onandthefarmsnsservice.utils.BaseResponse;
 import com.team6.onandthefarmsnsservice.vo.feed.*;
+import com.team6.onandthefarmsnsservice.vo.product.AddableProductResponse;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -29,7 +30,11 @@ public class FeedContentController {
 
     @PostMapping("/upload")
     @ApiOperation("sns 피드 업로드")
-    public ResponseEntity<BaseResponse> uploadFeed(@ApiIgnore Principal principal, @RequestPart FeedUploadRequest feedUploadRequest, @RequestPart List<MultipartFile> feedImages, @RequestPart FeedUploadProductRequest feedUploadProductRequest){
+    public ResponseEntity<BaseResponse> uploadFeed(@ApiIgnore Principal principal,
+                                                   @RequestPart(value = "data", required = false) FeedUploadRequest feedUploadRequest,
+                                                   @RequestPart(value = "images", required = false) List<MultipartFile> feedImages,
+                                                   @RequestPart(value = "productData", required = false) FeedUploadProductRequest feedUploadProductRequest)
+            throws Exception {
 
         FeedInfoDto feedInfoDto = new FeedInfoDto();
         feedInfoDto.setFeedTitle(feedUploadRequest.getFeedTitle());
@@ -38,8 +43,9 @@ public class FeedContentController {
         feedInfoDto.setFeedProductIdList(feedUploadProductRequest.getFeedProductIdList());
         feedInfoDto.setFeedImgSrcList(feedImages);
 
-        Long memberId = Long.parseLong(principal.getName());
-        String memberRole = null;
+        String[] principalInfo = principal.getName().split(" ");
+        Long memberId = Long.parseLong(principalInfo[0]);
+        String memberRole = principalInfo[1];
 
         Long feedId = feedService.uploadFeed(memberId, memberRole, feedInfoDto);
 
@@ -69,8 +75,10 @@ public class FeedContentController {
             return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        Long memberId = Long.parseLong(principal.getName());
-        FeedDetailResponse feedDetailResponse = feedService.findFeedDetail(feedId, memberId);
+        String[] principalInfo = principal.getName().split(" ");
+        Long loginMemberId = Long.parseLong(principalInfo[0]);
+
+        FeedDetailResponse feedDetailResponse = feedService.findFeedDetail(feedId, loginMemberId);
 
         BaseResponse baseResponse = BaseResponse.builder()
                 .httpStatus(HttpStatus.OK)
@@ -88,12 +96,77 @@ public class FeedContentController {
         return new ResponseEntity(baseResponse, HttpStatus.OK);
     }
 
+    @PutMapping("/modify")
+    @ApiOperation("sns 피드 수정")
+    public ResponseEntity<BaseResponse<FeedDetailResponse>> modifyFeed(@ApiIgnore Principal principal,
+                                                                       @RequestPart(value = "data", required = false) FeedModifyRequest feedModifyRequest,
+                                                                       @RequestPart(value = "images", required = false) List<MultipartFile> feedImages,
+                                                                       @RequestPart(value = "productData", required = false) FeedUploadProductRequest feedUploadProductRequest)
+            throws Exception {
+
+        FeedInfoDto feedInfoDto = new FeedInfoDto();
+        feedInfoDto.setFeedId(feedModifyRequest.getFeedId());
+        feedInfoDto.setFeedTitle(feedModifyRequest.getFeedTitle());
+        feedInfoDto.setFeedContent(feedModifyRequest.getFeedContent());
+        feedInfoDto.setFeedTag(feedModifyRequest.getFeedTag());
+        feedInfoDto.setFeedProductIdList(feedUploadProductRequest.getFeedProductIdList());
+        feedInfoDto.setFeedImgSrcList(feedImages);
+        feedInfoDto.setDeleteImg(feedModifyRequest.getDeleteImg());
+
+        String[] principalInfo = principal.getName().split(" ");
+        Long memberId = Long.parseLong(principalInfo[0]);
+
+        Long feedId = feedService.modifyFeed(memberId, feedInfoDto);
+
+        BaseResponse baseResponse = BaseResponse.builder()
+                .httpStatus(HttpStatus.OK)
+                .message("find feed success")
+                .data(feedId)
+                .build();
+        if(feedId == null){
+            baseResponse = BaseResponse.builder()
+                    .httpStatus(HttpStatus.BAD_REQUEST)
+                    .message("find feed fail")
+                    .build();
+            return new ResponseEntity(baseResponse, HttpStatus.BAD_REQUEST);
+        }
+
+        return new ResponseEntity(baseResponse, HttpStatus.OK);
+    }
+
+    @PutMapping("/delete")
+    @ApiOperation("sns 피드 삭제")
+    public ResponseEntity<BaseResponse<FeedDetailResponse>> deleteFeed(@ApiIgnore Principal principal, @RequestBody FeedDeleteRequest feedDeleteRequest){
+
+        String[] principalInfo = principal.getName().split(" ");
+        Long memberId = Long.parseLong(principalInfo[0]);
+
+        Long deletedFeedId = feedService.deleteFeed(memberId, feedDeleteRequest.getFeedId());
+
+        BaseResponse baseResponse = BaseResponse.builder()
+                .httpStatus(HttpStatus.OK)
+                .message("delete feed success")
+                .data(deletedFeedId)
+                .build();
+        if(deletedFeedId == null){
+            baseResponse = BaseResponse.builder()
+                    .httpStatus(HttpStatus.BAD_REQUEST)
+                    .message("delete feed fail")
+                    .build();
+            return new ResponseEntity(baseResponse, HttpStatus.BAD_REQUEST);
+        }
+
+        return new ResponseEntity(baseResponse, HttpStatus.OK);
+    }
+
+
     @GetMapping("/product")
     @ApiOperation("sns 피드에 등록 가능한 상품 목록 조회")
     public ResponseEntity<BaseResponse<List<AddableProductResponse>>> findAddableProduct(@ApiIgnore Principal principal){
 
-        Long memberId = null;
-        String memberRole = null;
+        String[] principalInfo = principal.getName().split(" ");
+        Long memberId = Long.parseLong(principalInfo[0]);
+        String memberRole = principalInfo[1];
 
         List<AddableProductResponse> addableProductList = feedService.findAddableProducts(memberId, memberRole);
 
@@ -111,6 +184,46 @@ public class FeedContentController {
         }
 
         return new ResponseEntity(baseResponse, HttpStatus.OK);
+    }
+
+    @PutMapping("/share")
+    @ApiOperation("sns 피드 공유 시 공유 카운트 업데이트하는 메서드")
+    public ResponseEntity<BaseResponse> upShareCount(@RequestBody FeedRelatedRequest feedRelatedRequest){
+
+        Boolean isUpShareCount = feedService.upShareCount(feedRelatedRequest.getFeedId());
+
+        BaseResponse baseResponse = BaseResponse.builder()
+                .httpStatus(HttpStatus.OK)
+                .message("up share count success")
+                .build();
+        if(!isUpShareCount){
+            baseResponse = BaseResponse.builder()
+                    .httpStatus(HttpStatus.BAD_REQUEST)
+                    .message("up share count fail")
+                    .build();
+            return new ResponseEntity(baseResponse, HttpStatus.BAD_REQUEST);
+        }
+
+        return new ResponseEntity(baseResponse, HttpStatus.OK);
+    }
+
+    @GetMapping("/list/tag")
+    @ApiOperation("tag 별로 조회")
+    public ResponseEntity<BaseResponse<FeedResponseResult>> findByFeedTag(@ApiIgnore Principal principal,
+                                                                          @RequestParam String feedTagName,
+                                                                          @RequestParam Integer pageNumber){
+        String[] principalInfo = principal.getName().split(" ");
+        Long loginMemberId = Long.parseLong(principalInfo[0]);
+
+        FeedResponseResult responses = feedService.findByFeedTag(feedTagName, pageNumber, loginMemberId);
+
+        BaseResponse response = BaseResponse.builder()
+                .httpStatus(HttpStatus.OK)
+                .message("OK")
+                .data(responses)
+                .build();
+
+        return new ResponseEntity(response, HttpStatus.OK);
     }
 
     /**
@@ -269,26 +382,6 @@ public class FeedContentController {
                 .build();
 
         return new ResponseEntity(response,HttpStatus.BAD_REQUEST);
-    }
-    @GetMapping("/share")
-    @ApiOperation("sns 피드 공유 시 공유 카운트 업데이트하는 메서드")
-    public ResponseEntity<BaseResponse> upShareCount(@RequestParam Long feedId){
-
-        Boolean isUpShareCount = feedService.upShareCount(feedId);
-
-        BaseResponse baseResponse = BaseResponse.builder()
-                .httpStatus(HttpStatus.OK)
-                .message("up share count success")
-                .build();
-        if(!isUpShareCount){
-            baseResponse = BaseResponse.builder()
-                    .httpStatus(HttpStatus.BAD_REQUEST)
-                    .message("up share count fail")
-                    .build();
-            return new ResponseEntity(baseResponse, HttpStatus.BAD_REQUEST);
-        }
-
-        return new ResponseEntity(baseResponse, HttpStatus.OK);
     }
 
 }

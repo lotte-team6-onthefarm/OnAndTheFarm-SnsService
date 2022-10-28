@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import com.team6.onandthefarmsnsservice.feignclient.MemberServiceClient;
+import com.team6.onandthefarmsnsservice.vo.user.UserVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
@@ -24,8 +26,7 @@ public class CommentServiceImpl implements CommentService {
 
     private final FeedRepository feedRepository;
     private final FeedCommentRepository feedCommentRepository;
-    private final UserRepository userRepository;
-    private final SellerRepository sellerRepository;
+    private final MemberServiceClient memberServiceClient;
 
     private DateUtils dateUtils;
     Environment env;
@@ -33,14 +34,12 @@ public class CommentServiceImpl implements CommentService {
     @Autowired
     public CommentServiceImpl(FeedRepository feedRepository,
                               FeedCommentRepository feedCommentRepository,
-                              UserRepository userRepository,
-                              SellerRepository sellerRepository,
+                              MemberServiceClient memberServiceClient,
                               DateUtils dateUtils,
                               Environment env){
         this.feedRepository = feedRepository;
         this.feedCommentRepository = feedCommentRepository;
-        this.userRepository = userRepository;
-        this.sellerRepository = sellerRepository;
+        this.memberServiceClient = memberServiceClient;
         this.dateUtils = dateUtils;
         this.env = env;
     }
@@ -68,14 +67,14 @@ public class CommentServiceImpl implements CommentService {
             }
 
             if(feedComment.getMemberRole().equals("user")){
-                Optional<User> user = userRepository.findById(feedComment.getMemberId());
-                commentDetail.setMemberName(user.get().getUserName());
-                commentDetail.setMemberProfileImg(user.get().getUserProfileImg());
+                UserVo userVo = memberServiceClient.findByUserId(feedComment.getMemberId());
+                commentDetail.setMemberName(userVo.getUserName());
+                commentDetail.setMemberProfileImg(userVo.getUserProfileImg());
             }
             else if(feedComment.getMemberRole().equals("seller")){
-                Optional<SellerVo> seller = sellerRepository.findById(feedComment.getMemberId());
-                commentDetail.setMemberName(seller.get().getSellerName());
-                commentDetail.setMemberProfileImg(seller.get().getSellerProfileImg());
+                SellerVo sellerVo = memberServiceClient.findBySellerId(feedComment.getMemberId());
+                commentDetail.setMemberName(sellerVo.getSellerName());
+                commentDetail.setMemberProfileImg(sellerVo.getSellerProfileImg());
             }
 
             commentDetailList.add(commentDetail);
