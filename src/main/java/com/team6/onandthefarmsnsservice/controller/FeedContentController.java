@@ -69,14 +69,18 @@ public class FeedContentController {
     @ApiOperation("sns 피드 상세페이지")
     public ResponseEntity<BaseResponse<FeedDetailResponse>> findFeedDetail(@ApiIgnore Principal principal, @RequestParam Long feedId){
 
+        Long loginMemberId = 0l;
+
+        if(principal != null){
+            String[] principalInfo = principal.getName().split(" ");
+            loginMemberId = Long.parseLong(principalInfo[0]);
+        }
+
         //조회수 증가
         Boolean isUpViewCount = feedService.upViewCount(feedId);
         if(!isUpViewCount){
             return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        String[] principalInfo = principal.getName().split(" ");
-        Long loginMemberId = Long.parseLong(principalInfo[0]);
 
         FeedDetailResponse feedDetailResponse = feedService.findFeedDetail(feedId, loginMemberId);
 
@@ -212,8 +216,11 @@ public class FeedContentController {
     public ResponseEntity<BaseResponse<FeedResponseResult>> findByFeedTag(@ApiIgnore Principal principal,
                                                                           @RequestParam String feedTagName,
                                                                           @RequestParam Integer pageNumber){
-        String[] principalInfo = principal.getName().split(" ");
-        Long loginMemberId = Long.parseLong(principalInfo[0]);
+        Long loginMemberId = null;
+        if(principal != null){
+            String[] principalInfo = principal.getName().split(" ");
+            loginMemberId = Long.parseLong(principalInfo[0]);
+        }
 
         FeedResponseResult responses = feedService.findByFeedTag(feedTagName, pageNumber, loginMemberId);
 
@@ -236,8 +243,11 @@ public class FeedContentController {
     @ApiOperation(value = "메인 피드 최신순 조회")
     public ResponseEntity<BaseResponse<FeedResponseResult>> findByRecentFeedList(@ApiIgnore Principal principal,
                                                                                  @RequestParam Integer pageNumber){
-        String[] principalInfo = principal.getName().split(" ");
-        Long loginMemberId = Long.parseLong(principalInfo[0]);
+        Long loginMemberId = null;
+        if(principal != null){
+            String[] principalInfo = principal.getName().split(" ");
+            loginMemberId = Long.parseLong(principalInfo[0]);
+        }
 
         FeedResponseResult responses = feedService.findByRecentFeedList(pageNumber, loginMemberId);
 
@@ -254,8 +264,11 @@ public class FeedContentController {
     @ApiOperation(value = "메인 피드 좋아요순 조회")
     public ResponseEntity<BaseResponse<FeedResponseResult>> findByLikeFeedList(@ApiIgnore Principal principal,
                                                                                @RequestParam Map<String,String> request){
-        String[] principalInfo = principal.getName().split(" ");
-        Long loginMemberId = Long.parseLong(principalInfo[0]);
+        Long loginMemberId = null;
+        if(principal != null){
+            String[] principalInfo = principal.getName().split(" ");
+            loginMemberId = Long.parseLong(principalInfo[0]);
+        }
 
         Integer pageNumber = Integer.valueOf(request.get("pageNumber"));
 
@@ -275,8 +288,19 @@ public class FeedContentController {
     public ResponseEntity<BaseResponse<FeedResponseResult>> findByFollowFeedList(@ApiIgnore Principal principal,
                                                                                  @RequestParam Map<String,String> request){
 
-        String[] principalInfo = principal.getName().split(" ");
-        Long loginMemberId = Long.parseLong(principalInfo[0]);
+        Long loginMemberId = null;
+        if(principal != null){
+            String[] principalInfo = principal.getName().split(" ");
+            loginMemberId = Long.parseLong(principalInfo[0]);
+        }
+        else{
+            BaseResponse response = BaseResponse.builder()
+                    .httpStatus(HttpStatus.BAD_REQUEST)
+                    .message("BAD_REQUEST")
+                    .build();
+
+            return new ResponseEntity(response,HttpStatus.BAD_REQUEST);
+        }
 
         Integer pageNumber = Integer.valueOf(request.get("pageNumber"));
         FeedResponseResult responses = feedService.findByFollowFeedList(loginMemberId, pageNumber);
@@ -296,8 +320,11 @@ public class FeedContentController {
             @ApiIgnore Principal principal,
             @RequestParam Map<String,String> request){
 
-        String[] principalInfo = principal.getName().split(" ");
-        Long loginMemberId = Long.parseLong(principalInfo[0]);
+        Long loginMemberId = null;
+        if(principal != null){
+            String[] principalInfo = principal.getName().split(" ");
+            loginMemberId = Long.parseLong(principalInfo[0]);
+        }
 
         Integer pageNumber = Integer.valueOf(request.get("pageNumber"));
 
