@@ -20,6 +20,7 @@ public class WishProductListResponse {
 
 	private Integer productWishCount;
 
+
 	private String sellerName;
 
 	private Integer productReviewCount;

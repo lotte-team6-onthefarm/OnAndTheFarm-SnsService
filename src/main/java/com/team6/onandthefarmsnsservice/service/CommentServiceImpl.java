@@ -16,7 +16,7 @@ import com.team6.onandthefarmsnsservice.repository.FeedCommentRepository;
 import com.team6.onandthefarmsnsservice.repository.FeedRepository;
 import com.team6.onandthefarmsnsservice.utils.DateUtils;
 import com.team6.onandthefarmsnsservice.vo.comment.CommentDetailResponse;
-import com.team6.onandthefarmsnsservice.vo.user.Seller;
+import com.team6.onandthefarmsnsservice.vo.user.SellerVo;
 
 @Service
 @Transactional
@@ -73,7 +73,7 @@ public class CommentServiceImpl implements CommentService {
                 commentDetail.setMemberProfileImg(user.get().getUserProfileImg());
             }
             else if(feedComment.getMemberRole().equals("seller")){
-                Optional<Seller> seller = sellerRepository.findById(feedComment.getMemberId());
+                Optional<SellerVo> seller = sellerRepository.findById(feedComment.getMemberId());
                 commentDetail.setMemberName(seller.get().getSellerName());
                 commentDetail.setMemberProfileImg(seller.get().getSellerProfileImg());
             }
