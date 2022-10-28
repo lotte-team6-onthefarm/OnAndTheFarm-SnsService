@@ -18,7 +18,7 @@ public class WishVo {
 
 	private Long productId;
 
-	private UserVo user;
+	private Long userId;
 
 	private Boolean wishStatus;
 }
