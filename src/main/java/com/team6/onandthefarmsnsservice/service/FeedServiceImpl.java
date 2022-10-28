@@ -319,7 +319,7 @@ public class FeedServiceImpl implements FeedService {
 					.build();
 
 			// feed 작성자와 로그인한 사용자가 같은지 여부
-			if (savedFeed.get().getMemberId() == loginMemberId) {
+			if (savedFeed.get().getMemberId().equals(loginMemberId)) {
 				feedDetailResponse.setIsModifiable(true);
 			}
 
@@ -416,7 +416,7 @@ public class FeedServiceImpl implements FeedService {
 	public Long deleteFeed(Long userId, Long feedId) {
 
 		Optional<Feed> savedFeed = feedRepository.findById(feedId);
-		if (savedFeed.get().getMemberId() == userId) {
+		if (savedFeed.get().getMemberId().equals(userId)) {
 			savedFeed.get().setFeedStatus(false);
 			return savedFeed.get().getFeedId();
 		}
@@ -474,6 +474,19 @@ public class FeedServiceImpl implements FeedService {
 		int startIndex = pageNumber * pageContentNumber;
 
 		int size = feedList.size();
+
+		if(loginMemberId==null){
+			FeedResponseResult responseResult = getNoheaderResponses(size, startIndex, feedList);
+			responseResult.setCurrentPageNum(pageNumber);
+			responseResult.setTotalElementNum(size);
+			if(size%pageContentNumber==0){
+				responseResult.setTotalPageNum(size/pageContentNumber);
+			}
+			else{
+				responseResult.setTotalPageNum((size/pageContentNumber)+1);
+			}
+			return responseResult;
+		}
 
 		FeedResponseResult responseResult = getResponses(size, startIndex, feedList, loginMemberId);
 		responseResult.setCurrentPageNum(pageNumber);
@@ -583,7 +596,18 @@ public class FeedServiceImpl implements FeedService {
 		int startIndex = pageNumber * pageContentNumber;
 
 		int size = feedList.size();
-
+		if(loginMemberId==null){
+			FeedResponseResult responseResult = getNoheaderResponses(size, startIndex, feedList);
+			responseResult.setCurrentPageNum(pageNumber);
+			responseResult.setTotalElementNum(size);
+			if(size%pageContentNumber==0){
+				responseResult.setTotalPageNum(size/pageContentNumber);
+			}
+			else{
+				responseResult.setTotalPageNum((size/pageContentNumber)+1);
+			}
+			return responseResult;
+		}
 		FeedResponseResult responseResult = getResponses(size, startIndex, feedList, loginMemberId);
 		responseResult.setCurrentPageNum(pageNumber);
 		responseResult.setTotalElementNum(size);
@@ -609,6 +633,18 @@ public class FeedServiceImpl implements FeedService {
 		int startIndex = pageNumber * pageContentNumber;
 
 		int size = feedList.size();
+		if(loginMemberId==null){
+			FeedResponseResult responseResult = getNoheaderResponses(size, startIndex, feedList);
+			responseResult.setCurrentPageNum(pageNumber);
+			responseResult.setTotalElementNum(size);
+			if(size%pageContentNumber==0){
+				responseResult.setTotalPageNum(size/pageContentNumber);
+			}
+			else{
+				responseResult.setTotalPageNum((size/pageContentNumber)+1);
+			}
+			return responseResult;
+		}
 
 		FeedResponseResult responseResult = getResponses(size, startIndex, feedList, loginMemberId);
 		responseResult.setCurrentPageNum(pageNumber);
@@ -646,6 +682,19 @@ public class FeedServiceImpl implements FeedService {
 
 		int size = feedList.size();
 
+		if(loginMemberId==null){
+			FeedResponseResult responseResult = getNoheaderResponses(size, startIndex, feedList);
+			responseResult.setCurrentPageNum(pageNumber);
+			responseResult.setTotalElementNum(size);
+			if(size%pageContentNumber==0){
+				responseResult.setTotalPageNum(size/pageContentNumber);
+			}
+			else{
+				responseResult.setTotalPageNum((size/pageContentNumber)+1);
+			}
+			return responseResult;
+		}
+
 		FeedResponseResult responseResult = getResponses(size, startIndex, feedList, loginMemberId);
 		responseResult.setCurrentPageNum(pageNumber);
 		responseResult.setTotalElementNum(size);
@@ -672,6 +721,19 @@ public class FeedServiceImpl implements FeedService {
 
 		int size = feedList.size();
 
+		if(loginMemberId==null){
+			FeedResponseResult responseResult = getNoheaderResponses(size, startIndex, feedList);
+			responseResult.setCurrentPageNum(pageNumber);
+			responseResult.setTotalElementNum(size);
+			if(size%pageContentNumber==0){
+				responseResult.setTotalPageNum(size/pageContentNumber);
+			}
+			else{
+				responseResult.setTotalPageNum((size/pageContentNumber)+1);
+			}
+			return responseResult;
+		}
+
 		FeedResponseResult responseResult = getResponses(size, startIndex, feedList, loginMemberId);
 		responseResult.setCurrentPageNum(pageNumber);
 		responseResult.setTotalElementNum(size);
@@ -685,7 +747,98 @@ public class FeedServiceImpl implements FeedService {
 	}
 
 	/**
-	 * 조회 목록을 페이징처리 해주는 메서드
+	 * header가 없을 때, 조회 목록을 페이징처리 해주는 메서드
+	 *
+	 * @param size
+	 * @param startIndex
+	 * @param feedList
+	 * @return
+	 */
+	public FeedResponseResult getNoheaderResponses(int size, int startIndex, List<Feed> feedList) {
+		FeedResponseResult responseResult = new FeedResponseResult();
+		List<FeedResponse> responseList = new ArrayList<>();
+
+
+		if(size < startIndex){
+			responseResult.setFeedResponseList(responseList);
+			return responseResult;
+		}
+		if (size < startIndex + pageContentNumber) {
+			for (Feed feed : feedList.subList(startIndex, size)) {
+				if (feed != null) {
+					FeedResponse response = FeedResponse.builder()
+							.feedTitle(feed.getFeedTitle())
+							.feedId(feed.getFeedId())
+							.feedCommentCount(feed.getFeedCommentCount())
+							.feedLikeCount(feed.getFeedLikeCount())
+							.feedScrapCount(feed.getFeedScrapCount())
+							.feedShareCount(feed.getFeedShareCount())
+							.feedViewCount(feed.getFeedViewCount())
+							.memberId(feed.getMemberId())
+							.memberRole(feed.getMemberRole())
+							.feedContent(feed.getFeedContent())
+							.isModifiable(false)
+							.feedLikeStatus(false)
+							.scrapStatus(false)
+							.followStatus(false)
+							.build();
+
+
+					if (feed.getMemberRole().equals("user")) { // 유저
+						UserVo user = memberServiceClient.findByUserId(feed.getMemberId());
+						response.setMemberName(user.getUserName());
+						response.setMemberProfileImg(user.getUserProfileImg());
+					} else if (feed.getMemberRole().equals("seller")) { // 셀러
+						SellerVo seller = memberServiceClient.findBySellerId(feed.getMemberId());
+						response.setMemberName(seller.getSellerName());
+						response.setMemberProfileImg(seller.getSellerProfileImg());
+					}
+					List<FeedImage> feedImage = feedImageRepository.findByFeed(feed);
+					response.setFeedImageSrc(feedImage.get(0).getFeedImageSrc());
+
+					responseList.add(response);
+				}
+			}
+			responseResult.setFeedResponseList(responseList);
+			return responseResult;
+		}
+		for (Feed feed : feedList.subList(startIndex, startIndex + pageContentNumber)) {
+			FeedResponse response = FeedResponse.builder()
+					.feedTitle(feed.getFeedTitle())
+					.feedId(feed.getFeedId())
+					.feedCommentCount(feed.getFeedCommentCount())
+					.feedLikeCount(feed.getFeedLikeCount())
+					.feedScrapCount(feed.getFeedScrapCount())
+					.feedShareCount(feed.getFeedShareCount())
+					.feedViewCount(feed.getFeedViewCount())
+					.memberId(feed.getMemberId())
+					.memberRole(feed.getMemberRole())
+					.feedContent(feed.getFeedContent())
+					.isModifiable(false)
+					.feedLikeStatus(false)
+					.scrapStatus(false)
+					.followStatus(false)
+					.build();
+
+			if (feed.getMemberRole().equals("user")) { // 유저
+				UserVo user = memberServiceClient.findByUserId(feed.getMemberId());
+				response.setMemberName(user.getUserName());
+				response.setMemberProfileImg(user.getUserProfileImg());
+			} else if (feed.getMemberRole().equals("seller")) { // 셀러
+				SellerVo seller = memberServiceClient.findBySellerId(feed.getMemberId());
+				response.setMemberName(seller.getSellerName());
+				response.setMemberProfileImg(seller.getSellerProfileImg());
+			}
+			List<FeedImage> feedImage = feedImageRepository.findByFeed(feed);
+			response.setFeedImageSrc(feedImage.get(0).getFeedImageSrc());
+			responseList.add(response);
+		}
+		responseResult.setFeedResponseList(responseList);
+		return responseResult;
+	}
+
+	/**
+	 * header가 있을 때, 조회 목록을 페이징처리 해주는 메서드
 	 *
 	 * @param size
 	 * @param startIndex
