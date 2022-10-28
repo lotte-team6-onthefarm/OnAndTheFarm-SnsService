@@ -203,33 +203,6 @@ public class FeedServiceImpl implements FeedService {
 
 				addableProductList.add(addableProductResponse);
 			}
-
-//			List<Orders> ordersList = orderRepository.findWithOrderAndOrdersStatus(memberId);
-//			List<Long> productIdList = new ArrayList<>();
-//			for (Orders orders : ordersList) {
-//				//orderproduct받아와서 해당 productID로 조회하기
-//				List<OrderProduct> orderProductList = orderProductRepository.findByOrders(orders);
-//				for (OrderProduct orderProduct : orderProductList) {
-//					if(!productIdList.contains(orderProduct.getProductId())) {
-//						productIdList.add(orderProduct.getProductId());
-//
-//						Optional<Product> savedProduct = productRepository.findById(orderProduct.getProductId());
-//						Product product = savedProduct.get();
-//
-//						Optional<SellerVo> savedSeller = sellerRepository.findById(product.getSeller().getSellerId());
-//
-//						AddableProductResponse addableProductResponse = AddableProductResponse.builder()
-//								.productId(product.getProductId())
-//								.productName(product.getProductName())
-//								.productPrice(product.getProductPrice())
-//								.productMainImgSrc(product.getProductMainImgSrc())
-//								.sellerShopName(savedSeller.get().getSellerShopName())
-//								.build();
-//
-//						addableProductList.add(addableProductResponse);
-//					}
-//				}
-//			}
 		} else if (memberRole.equals("seller")) {
 			List<ProductVo> productList = productServiceClient.findBySellerId(memberId);
 			SellerVo sellerVo = memberServiceClient.findBySellerId(memberId);
@@ -1211,15 +1184,29 @@ public class FeedServiceImpl implements FeedService {
 
 		List<Feed> feedList = feedRepository.findFeedListByMemberId(memberProfileDto.getMemberId());
 		List<Scrap> scrapList = scrapRepository.findScrapListByMemberId(memberProfileDto.getMemberId());
-		List<WishListResponse> wishList = productServiceClient.findWishProductListByMember(memberProfileDto.getMemberId());
 
-		MemberProfileCountResponse memberProfileCountResponse = MemberProfileCountResponse.builder()
-				.photoCount(feedList.size())
-				.scrapCount(scrapList.size())
-				.wishCount(wishList.size())
-				.build();
+		if(memberProfileDto.getMemberRole().equals("user")) {
+			List<WishListResponse> wishList = productServiceClient.findWishProductListByMember(memberProfileDto.getMemberId());
 
-		return memberProfileCountResponse;
+			MemberProfileCountResponse memberProfileCountResponse = MemberProfileCountResponse.builder()
+					.photoCount(feedList.size())
+					.scrapCount(scrapList.size())
+					.wishCount(wishList.size())
+					.build();
+
+			return memberProfileCountResponse;
+		}
+		else{
+			List<ProductVo> productList = productServiceClient.findBySellerId(memberProfileDto.getMemberId());
+
+			MemberProfileCountResponse memberProfileCountResponse = MemberProfileCountResponse.builder()
+					.photoCount(feedList.size())
+					.scrapCount(scrapList.size())
+					.productCount(productList.size())
+					.build();
+
+			return memberProfileCountResponse;
+		}
 	}
 
 

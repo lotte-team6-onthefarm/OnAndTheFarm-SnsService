@@ -210,15 +210,14 @@ public class ProfileController {
 
 		MemberProfileDto memberProfileDto = new MemberProfileDto();
 
-		Long loginId = null;
-		String loginRole = null;
+		String[] principalInfo = principal.getName().split(" ");
+		Long loginId = Long.parseLong(principalInfo[0]);
+		String loginRole = principalInfo[1];
+
 		if(request.containsKey("memberId")) {
 			memberProfileDto.setMemberId(Long.parseLong(request.get("memberId")));
 			memberProfileDto.setMemberRole(request.get("memberRole"));
 		}else{
-			String[] principalInfo = principal.getName().split(" ");
-			loginId = Long.parseLong(principalInfo[0]);
-			loginRole = principalInfo[1];
 			memberProfileDto.setMemberId(loginId);
 			memberProfileDto.setMemberRole(loginRole);
 		}
