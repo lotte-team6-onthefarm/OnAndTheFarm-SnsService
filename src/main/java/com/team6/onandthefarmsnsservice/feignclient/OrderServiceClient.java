@@ -10,7 +10,6 @@ import java.util.List;
 @FeignClient(name = "order-service")
 public interface OrderServiceClient {
 
-    // 구현 필요(배달완료 주문 -> 배달완료 주문상품) -yewon-
     @GetMapping("/api/user/order/order-service/list/add/{user-no}")
     List<AddableOrderProductResponse> findAddableOrderProductList(@PathVariable("user-no") Long memberId);
 }
