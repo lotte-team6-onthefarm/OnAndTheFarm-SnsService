@@ -19,7 +19,7 @@ public interface MemberServiceClient {
     @GetMapping("/api/seller/members/member-service/{seller-no}")
     SellerVo findBySellerId(@PathVariable("seller-no")Long sellerId);
 
-    @GetMapping("/api/user/members/member-service/{member-no}")
+    @GetMapping("/api/user/members/member-service/following/list/{member-no}")
     List<FollowingVo> findByFollowingMemberId(@PathVariable("member-no")Long memberId);
 
     //구현아직임 -jiny-
@@ -30,7 +30,6 @@ public interface MemberServiceClient {
     @GetMapping("/api/seller/members/member-service/get-seller/{member-no}")
     SellerVo getSellerBySellerId(@PathVariable("member-no")Long memberId);
 
-    //구현 필요 -yewon-
     @GetMapping("/api/user/members/member-service/following")
     FollowingVo findByFollowingMemberIdAndFollowerMemberId(@RequestParam Long followingMemberId, @RequestParam Long followerMemberId);
 
