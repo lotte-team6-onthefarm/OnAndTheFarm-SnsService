@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+
 import com.team6.onandthefarmsnsservice.dto.profile.*;
 import com.team6.onandthefarmsnsservice.feignclient.OrderServiceClient;
 import com.team6.onandthefarmsnsservice.utils.S3Upload;
@@ -946,11 +947,11 @@ public class FeedServiceImpl implements FeedService {
 
 			Optional<Feed> savedFeed = feedRepository.findById(scrap.getFeed().getFeedId());
 			if(savedFeed.get().getMemberRole().equals("user")) {
-				UserVo user = memberServiceClient.getUserByUserId(savedFeed.get().getMemberId());
+				UserVo user = memberServiceClient.findByUserId(savedFeed.get().getMemberId());
 				profileMainScrapResponse.setMemberName(user.getUserName());
 			}
 			else{
-				SellerVo seller = memberServiceClient.getSellerBySellerId(savedFeed.get().getMemberId());
+				SellerVo seller = memberServiceClient.findBySellerId(savedFeed.get().getMemberId());
 				profileMainScrapResponse.setMemberName(seller.getSellerName());
 			}
 			responseList.add(profileMainScrapResponse);
@@ -964,7 +965,7 @@ public class FeedServiceImpl implements FeedService {
 		Long memberId = profileMainWishDto.getMemberId();
 		List<ProfileMainWishResponse> responseList = new ArrayList<>();
 
-		Page<WishVo> wishList = productServiceClient.findWishListByMemberId(pageRequest, memberId);
+		List<WishVo> wishList = productServiceClient.findWishListByMemberId(pageRequest, memberId);
 		for(WishVo wish : wishList){
 			ProductVo product = productServiceClient.findProductByProductId(wish.getProductId());
 			ProfileMainWishResponse profileMainWishResponse = ProfileMainWishResponse.builder()

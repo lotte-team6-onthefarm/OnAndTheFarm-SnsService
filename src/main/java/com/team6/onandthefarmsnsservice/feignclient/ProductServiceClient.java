@@ -22,11 +22,9 @@ public interface ProductServiceClient {
 	@GetMapping("/api/user/product/product-service/wish/{user-no}")
 	public List<WishListResponse> findWishProductListByMember(@PathVariable("user-no") Long memberId);
 
-	//구현 필요 -jiny-
 	@GetMapping("/api/user/product/product-service/wish-list/{user-no}")
-	public Page<WishVo> findWishListByMemberId(PageRequest pageRequest, @PathVariable("user-no")Long memberId);
+	public List<WishVo> findWishListByMemberId(PageRequest pageRequest, @PathVariable("user-no")Long memberId);
 
-	//구현 필요 -jiny-
 	@GetMapping("/api/user/product/product-service/product/{product-no}")
 	public ProductVo findProductByProductId(@PathVariable("product-no") Long productId);
 
@@ -37,6 +35,4 @@ public interface ProductServiceClient {
 	//구현 필요 -yewon-
 	@GetMapping("/api/user/product/product-service/review/{product-no}")
 	List<ReviewVo> findReviewByProductId(@PathVariable("product-no") Long productId);
-
-
 }

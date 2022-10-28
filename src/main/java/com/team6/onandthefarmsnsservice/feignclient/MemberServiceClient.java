@@ -33,4 +33,5 @@ public interface MemberServiceClient {
     //구현 필요 -yewon-
     @GetMapping("/api/user/members/member-service/following")
     FollowingVo findByFollowingMemberIdAndFollowerMemberId(@RequestParam Long followingMemberId, @RequestParam Long followerMemberId);
+
 }
