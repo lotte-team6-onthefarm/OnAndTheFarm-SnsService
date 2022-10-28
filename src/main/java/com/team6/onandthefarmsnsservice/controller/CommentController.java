@@ -123,7 +123,7 @@ public class CommentController {
         return new ResponseEntity(baseResponse, HttpStatus.OK);
     }
 
-    @GetMapping
+    @GetMapping("/list")
     @ApiOperation("피드 댓글 조회")
     public ResponseEntity<BaseResponse<List<CommentDetailResponse>>> findComment(@ApiIgnore Principal principal, @RequestParam Long feedId){
 
