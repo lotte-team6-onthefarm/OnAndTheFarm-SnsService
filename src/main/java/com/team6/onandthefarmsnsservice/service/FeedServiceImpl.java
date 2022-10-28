@@ -964,8 +964,12 @@ public class FeedServiceImpl implements FeedService {
 		PageRequest pageRequest = PageRequest.of(0, 8, Sort.by("wishId").descending());
 		Long memberId = profileMainWishDto.getMemberId();
 		List<ProfileMainWishResponse> responseList = new ArrayList<>();
+		WishPageVo wishPageVo = WishPageVo.builder()
+				.pageNumber(profileMainWishDto.getPageNumber())
+				.pageRequest(pageRequest)
+				.build();
 
-		List<WishVo> wishList = productServiceClient.findWishListByMemberId(profileMainWishDto.getPageNumber(), pageRequest, memberId);
+		List<WishVo> wishList = productServiceClient.findWishListByMemberId(wishPageVo, memberId);
 		for(WishVo wish : wishList){
 			ProductVo product = productServiceClient.findProductByProductId(wish.getProductId());
 			ProfileMainWishResponse profileMainWishResponse = ProfileMainWishResponse.builder()
