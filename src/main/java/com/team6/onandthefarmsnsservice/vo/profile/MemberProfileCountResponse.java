@@ -9,4 +9,5 @@ public class MemberProfileCountResponse {
     private Integer photoCount;
     private Integer scrapCount;
     private Integer wishCount;
+    private Integer productCount;
 }

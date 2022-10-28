@@ -25,7 +25,7 @@ public interface ProductServiceClient {
 	@GetMapping("/api/user/product/product-service/product/{product-no}")
 	ProductVo findProductByProductId(@PathVariable("product-no") Long productId);
 
-	@GetMapping("/api/seller/product/product-service/product/{seller-no}")
+	@GetMapping("/api/seller/product/product-service/product/list/{seller-no}")
 	List<ProductVo> findBySellerId(@PathVariable("seller-no") Long sellerId);
 
 	@GetMapping("/api/user/product/product-service/review/{product-no}")
