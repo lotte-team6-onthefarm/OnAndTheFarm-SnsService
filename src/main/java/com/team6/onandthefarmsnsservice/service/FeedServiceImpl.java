@@ -965,7 +965,7 @@ public class FeedServiceImpl implements FeedService {
 		Long memberId = profileMainWishDto.getMemberId();
 		List<ProfileMainWishResponse> responseList = new ArrayList<>();
 
-		List<WishVo> wishList = productServiceClient.findWishListByMemberId(pageRequest, memberId);
+		List<WishVo> wishList = productServiceClient.findWishListByMemberId(profileMainWishDto.getPageNumber(), pageRequest, memberId);
 		for(WishVo wish : wishList){
 			ProductVo product = productServiceClient.findProductByProductId(wish.getProductId());
 			ProfileMainWishResponse profileMainWishResponse = ProfileMainWishResponse.builder()
