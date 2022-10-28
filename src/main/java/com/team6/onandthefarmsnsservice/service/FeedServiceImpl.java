@@ -28,18 +28,24 @@ import com.team6.onandthefarmsnsservice.entity.FeedImageProduct;
 import com.team6.onandthefarmsnsservice.entity.FeedLike;
 import com.team6.onandthefarmsnsservice.entity.FeedTag;
 import com.team6.onandthefarmsnsservice.entity.Scrap;
+import com.team6.onandthefarmsnsservice.feignclient.MemberServiceClient;
+import com.team6.onandthefarmsnsservice.feignclient.ProductServiceClient;
 import com.team6.onandthefarmsnsservice.repository.FeedImageProductRepository;
 import com.team6.onandthefarmsnsservice.repository.FeedImageRepository;
 import com.team6.onandthefarmsnsservice.repository.FeedLikeRepository;
 import com.team6.onandthefarmsnsservice.repository.FeedRepository;
 import com.team6.onandthefarmsnsservice.repository.FeedTagRepository;
 import com.team6.onandthefarmsnsservice.repository.ScrapRepository;
+import com.team6.onandthefarmsnsservice.utils.DateUtils;
 import com.team6.onandthefarmsnsservice.vo.feed.AddableProductResponse;
 import com.team6.onandthefarmsnsservice.vo.feed.FeedDetailResponse;
 import com.team6.onandthefarmsnsservice.vo.feed.FeedResponseResult;
 import com.team6.onandthefarmsnsservice.vo.feed.imageProduct.ImageInfo;
 import com.team6.onandthefarmsnsservice.vo.feed.imageProduct.ImageProductInfo;
 import com.team6.onandthefarmsnsservice.vo.feed.imageProduct.ImageProductResponse;
+import com.team6.onandthefarmsnsservice.vo.product.ProductVo;
+import com.team6.onandthefarmsnsservice.vo.product.WishVo;
+import com.team6.onandthefarmsnsservice.vo.profile.MemberProfileCountResponse;
 import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainFeedResponse;
 import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainScrapResponse;
 import com.team6.onandthefarmsnsservice.vo.profile.ProfileMainWishResponse;
@@ -47,6 +53,7 @@ import com.team6.onandthefarmsnsservice.vo.profile.WishProductListResponse;
 import com.team6.onandthefarmsnsservice.vo.profile.WishProductListResult;
 import com.team6.onandthefarmsnsservice.vo.user.Following;
 import com.team6.onandthefarmsnsservice.vo.user.SellerVo;
+import com.team6.onandthefarmsnsservice.vo.user.UserVo;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -87,6 +94,10 @@ public class FeedServiceImpl implements FeedService {
 
 	private final ScrapRepository scrapRepository;
 
+	private final MemberServiceClient memberServiceClient;
+
+	private final ProductServiceClient productServiceClient;
+
 	private final FeedImageProductRepository feedImageProductRepository;
 
 	private final ReviewRepository reviewRepository;
@@ -104,6 +115,8 @@ public class FeedServiceImpl implements FeedService {
 						   ScrapRepository scrapRepository,
 						   FeedImageProductRepository feedImageProductRepository,
 						   FeedTagRepository feedTagRepository,
+						   MemberServiceClient memberServiceClient,
+						   ProductServiceClient productServiceClient,
 						   UserRepository userRepository,
 						   SellerRepository sellerRepository,
 						   FollowingRepository followingRepository,
@@ -115,7 +128,8 @@ public class FeedServiceImpl implements FeedService {
 						   S3Upload s3Upload,
 						   DateUtils dateUtils,
 						   Environment env) {
-
+		this.memberServiceClient = memberServiceClient;
+		this.productServiceClient = productServiceClient;
 		this.feedLikeRepository = feedLikeRepository;
 		this.scrapRepository = scrapRepository;
 		this.feedRepository = feedRepository;
@@ -240,6 +254,7 @@ public class FeedServiceImpl implements FeedService {
 			Optional<SellerVo> savedSeller = sellerRepository.findById(memberId);
 			SellerVo sellerVo = savedSeller.get();
 
+
 			List<Product> productList = productRepository.findBySeller(sellerVo);
 
 			for (Product product : productList) {
@@ -348,7 +363,7 @@ public class FeedServiceImpl implements FeedService {
 
 			// feed 작성자의 이름과 프로필 이미지
 			if (savedFeed.get().getMemberRole().equals("user")) {
-				Optional<User> savedUser = userRepository.findById(savedFeed.get().getMemberId());
+				Optional<UserVo> savedUser = userRepository.findById(savedFeed.get().getMemberId());
 				feedDetailResponse.setMemberId(savedFeed.get().getMemberId());
 				feedDetailResponse.setMemberRole(savedFeed.get().getMemberRole());
 				feedDetailResponse.setMemberName(savedUser.get().getUserName());
@@ -755,11 +770,11 @@ public class FeedServiceImpl implements FeedService {
 					}
 
 					if (feed.getMemberRole().equals("user")) { // 유저
-						Optional<User> user = userRepository.findById(feed.getMemberId());
+						Optional<UserVo> user = userRepository.findById(feed.getMemberId());
 						response.setMemberName(user.get().getUserName());
 						response.setMemberProfileImg(user.get().getUserProfileImg());
 					} else if (feed.getMemberRole().equals("seller")) { // 셀러
-						Optional<Seller> seller = sellerRepository.findById(feed.getMemberId());
+						Optional<SellerVo> seller = sellerRepository.findById(feed.getMemberId());
 						response.setMemberName(seller.get().getSellerName());
 						response.setMemberProfileImg(seller.get().getSellerProfileImg());
 					}
@@ -811,11 +826,11 @@ public class FeedServiceImpl implements FeedService {
 			}
 
 			if (feed.getMemberRole().equals("user")) { // 유저
-				Optional<User> user = userRepository.findById(feed.getMemberId());
+				Optional<UserVo> user = userRepository.findById(feed.getMemberId());
 				response.setMemberName(user.get().getUserName());
 				response.setMemberProfileImg(user.get().getUserProfileImg());
 			} else if (feed.getMemberRole().equals("seller")) { // 셀러
-				Optional<Seller> seller = sellerRepository.findById(feed.getMemberId());
+				Optional<SellerVo> seller = sellerRepository.findById(feed.getMemberId());
 				response.setMemberName(seller.get().getSellerName());
 				response.setMemberProfileImg(seller.get().getSellerProfileImg());
 			}
@@ -938,7 +953,7 @@ public class FeedServiceImpl implements FeedService {
 
 	@Override
 	public List<ProfileMainScrapResponse> findByMemberScrapList(ProfileMainScrapDto profileMainScrapDto) {
-		PageRequest pageRequest = PageRequest.of(0, 8);
+		PageRequest pageRequest = PageRequest.of(0, 8, Sort.by("scrapId").descending());
 		Long memberId = profileMainScrapDto.getMemberId();
 		List<ProfileMainScrapResponse> responseList = new ArrayList<>();
 		Page<Scrap> scrapList = scrapRepository.findMainScrapListByMemberId(pageRequest, memberId);
@@ -952,12 +967,12 @@ public class FeedServiceImpl implements FeedService {
 
 			Optional<Feed> savedFeed = feedRepository.findById(scrap.getFeed().getFeedId());
 			if(savedFeed.get().getMemberRole().equals("user")) {
-				Optional<User> user = userRepository.findById(savedFeed.get().getMemberId());
-				profileMainScrapResponse.setMemberName(user.get().getUserName());
+				UserVo user = memberServiceClient.getUserByUserId(savedFeed.get().getMemberId());
+				profileMainScrapResponse.setMemberName(user.getUserName());
 			}
 			else{
-				Optional<SellerVo> seller = sellerRepository.findById(savedFeed.get().getMemberId());
-				profileMainScrapResponse.setMemberName(seller.get().getSellerName());
+				SellerVo seller = memberServiceClient.getSellerBySellerId(savedFeed.get().getMemberId());
+				profileMainScrapResponse.setMemberName(seller.getSellerName());
 			}
 			responseList.add(profileMainScrapResponse);
 		}
@@ -966,16 +981,16 @@ public class FeedServiceImpl implements FeedService {
 
 	@Override
 	public List<ProfileMainWishResponse> findWishListByMember(ProfileMainWishDto profileMainWishDto) {
-		PageRequest pageRequest = PageRequest.of(0, 8);
+		PageRequest pageRequest = PageRequest.of(0, 8, Sort.by("wishId").descending());
 		Long memberId = profileMainWishDto.getMemberId();
 		List<ProfileMainWishResponse> responseList = new ArrayList<>();
 
-		Page<Wish> wishList = productWishRepository.findMainWishListByUserId(pageRequest, memberId);
-		for(Wish wish : wishList){
-			Optional<Product> product = productRepository.findById(wish.getProduct().getProductId());
+		Page<WishVo> wishList = productServiceClient.findWishListByMemberId(pageRequest, memberId);
+		for(WishVo wish : wishList){
+			ProductVo product = productServiceClient.findProductByProductId(wish.getProductId());
 			ProfileMainWishResponse profileMainWishResponse = ProfileMainWishResponse.builder()
-					.productId(product.get().getProductId())
-					.productImgSrc(product.get().getProductMainImgSrc())
+					.productId(product.getProductId())
+					.productImgSrc(product.getProductMainImgSrc())
 					.build();
 			responseList.add(profileMainWishResponse);
 		}
@@ -1059,7 +1074,7 @@ public class FeedServiceImpl implements FeedService {
 
 		List<Feed> feedList = feedRepository.findFeedListByMemberId(memberProfileDto.getMemberId());
 		List<Scrap> scrapList = scrapRepository.findScrapListByMemberId(memberProfileDto.getMemberId());
-		List<Wish> wishList = productWishRepository.findWishListByUserId(memberProfileDto.getMemberId());
+		List<WishVo> wishList = productWishRepository.findWishListByUserId(memberProfileDto.getMemberId());
 
 		MemberProfileCountResponse memberProfileCountResponse = MemberProfileCountResponse.builder()
 				.photoCount(feedList.size())

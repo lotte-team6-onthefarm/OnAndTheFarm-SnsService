@@ -12,7 +12,7 @@ public class SellerVo {
 
     private String sellerEmail;
 
-    private String sellerPassword;
+    //private String sellerPassword;
 
     private String sellerZipcode;
 
