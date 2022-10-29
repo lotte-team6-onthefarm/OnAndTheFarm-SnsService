@@ -127,8 +127,12 @@ public class CommentController {
     @ApiOperation("피드 댓글 조회")
     public ResponseEntity<BaseResponse<List<CommentDetailResponse>>> findComment(@ApiIgnore Principal principal, @RequestParam Long feedId){
 
-        String[] principalInfo = principal.getName().split(" ");
-        Long memberId = Long.parseLong(principalInfo[0]);
+        Long memberId = 0l;
+
+        if(principal != null){
+            String[] principalInfo = principal.getName().split(" ");
+            memberId = Long.parseLong(principalInfo[0]);
+        }
 
         List<CommentDetailResponse> commentList = commentService.findCommentDetail(feedId, memberId);
 

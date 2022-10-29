@@ -369,7 +369,7 @@ public class FeedServiceImpl implements FeedService {
 	public Long modifyFeed(Long memberId, FeedInfoDto feedInfoDto) {
 
 		Optional<Feed> savedFeed = feedRepository.findById(feedInfoDto.getFeedId());
-		if (savedFeed.get().getMemberId() == memberId) {
+		if (savedFeed.get().getMemberId().equals(memberId)) {
 			savedFeed.get().setFeedTitle(feedInfoDto.getFeedTitle());
 			savedFeed.get().setFeedContent(feedInfoDto.getFeedContent());
 			savedFeed.get().setFeedUpdateAt(dateUtils.transDate(env.getProperty("dateutils.format")));
@@ -881,7 +881,7 @@ public class FeedServiceImpl implements FeedService {
 							.build();
 
 					// feed 작성자와 로그인한 사용자가 같은지 여부
-					if (feed.getMemberId() == loginMemberId) {
+					if (feed.getMemberId().equals(loginMemberId)) {
 						response.setIsModifiable(true);
 					}
 
@@ -937,7 +937,7 @@ public class FeedServiceImpl implements FeedService {
 					.build();
 
 			// feed 작성자와 로그인한 사용자가 같은지 여부
-			if (feed.getMemberId() == loginMemberId) {
+			if (feed.getMemberId().equals(loginMemberId)) {
 				response.setIsModifiable(true);
 			}
 
