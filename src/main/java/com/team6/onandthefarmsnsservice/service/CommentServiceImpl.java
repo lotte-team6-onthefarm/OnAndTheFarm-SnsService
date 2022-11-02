@@ -7,6 +7,8 @@ import java.util.Optional;
 import com.team6.onandthefarmsnsservice.feignclient.MemberServiceClient;
 import com.team6.onandthefarmsnsservice.vo.user.UserVo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +29,7 @@ public class CommentServiceImpl implements CommentService {
     private final FeedRepository feedRepository;
     private final FeedCommentRepository feedCommentRepository;
     private final MemberServiceClient memberServiceClient;
+    private final CircuitBreakerFactory circuitBreakerFactory;
 
     private DateUtils dateUtils;
     Environment env;
@@ -36,16 +39,19 @@ public class CommentServiceImpl implements CommentService {
                               FeedCommentRepository feedCommentRepository,
                               MemberServiceClient memberServiceClient,
                               DateUtils dateUtils,
-                              Environment env){
+                              Environment env,
+                              CircuitBreakerFactory circuitBreakerFactory){
         this.feedRepository = feedRepository;
         this.feedCommentRepository = feedCommentRepository;
         this.memberServiceClient = memberServiceClient;
         this.dateUtils = dateUtils;
         this.env = env;
+        this.circuitBreakerFactory=circuitBreakerFactory;
     }
 
     @Override
     public List<CommentDetailResponse> findCommentDetail(Long feedId, Long memberId) {
+        CircuitBreaker circuitBreaker = circuitBreakerFactory.create("memberCircuitbreaker");
 
         List<CommentDetailResponse> commentDetailList = new ArrayList<>();
 
@@ -67,12 +73,20 @@ public class CommentServiceImpl implements CommentService {
             }
 
             if(feedComment.getMemberRole().equals("user")){
-                UserVo userVo = memberServiceClient.findByUserId(feedComment.getMemberId());
+                UserVo userVo
+                        = circuitBreaker.run(
+                                ()->memberServiceClient.findByUserId(feedComment.getMemberId()),
+                        throwable -> new UserVo());
+                //UserVo userVo = memberServiceClient.findByUserId(feedComment.getMemberId());
                 commentDetail.setMemberName(userVo.getUserName());
                 commentDetail.setMemberProfileImg(userVo.getUserProfileImg());
             }
             else if(feedComment.getMemberRole().equals("seller")){
-                SellerVo sellerVo = memberServiceClient.findBySellerId(feedComment.getMemberId());
+                SellerVo sellerVo
+                        = circuitBreaker.run(
+                        ()->memberServiceClient.findBySellerId(feedComment.getMemberId()),
+                        throwable -> new SellerVo());
+                //SellerVo sellerVo = memberServiceClient.findBySellerId(feedComment.getMemberId());
                 commentDetail.setMemberName(sellerVo.getSellerName());
                 commentDetail.setMemberProfileImg(sellerVo.getSellerProfileImg());
             }
