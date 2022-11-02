@@ -15,6 +15,8 @@ import com.team6.onandthefarmsnsservice.vo.feed.FeedResponse;
 import com.team6.onandthefarmsnsservice.vo.orders.AddableOrderProductResponse;
 import com.team6.onandthefarmsnsservice.vo.product.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -86,6 +88,8 @@ public class FeedServiceImpl implements FeedService {
 	private DateUtils dateUtils;
 	Environment env;
 
+	private final CircuitBreakerFactory circuitBreakerFactory;
+
 
 	@Autowired
 	public FeedServiceImpl(FeedRepository feedRepository,
@@ -99,7 +103,8 @@ public class FeedServiceImpl implements FeedService {
 						   OrderServiceClient orderServiceClient,
 						   S3Upload s3Upload,
 						   DateUtils dateUtils,
-						   Environment env) {
+						   Environment env,
+						   CircuitBreakerFactory circuitBreakerFactory) {
 		this.memberServiceClient = memberServiceClient;
 		this.productServiceClient = productServiceClient;
 		this.orderServiceClient = orderServiceClient;
@@ -112,6 +117,7 @@ public class FeedServiceImpl implements FeedService {
 		this.s3Upload = s3Upload;
 		this.dateUtils = dateUtils;
 		this.env = env;
+		this.circuitBreakerFactory=circuitBreakerFactory;
 	}
 
 	/**
@@ -185,14 +191,24 @@ public class FeedServiceImpl implements FeedService {
 	 */
 	@Override
 	public List<AddableProductResponse> findAddableProducts(Long memberId, String memberRole) {
+		CircuitBreaker memberCircuitBreaker = circuitBreakerFactory.create("memberCircuitbreaker");
+		CircuitBreaker productCircuitBreaker = circuitBreakerFactory.create("productCircuitbreaker");
 
 		List<AddableProductResponse> addableProductList = new ArrayList<>();
 
 		if (memberRole.equals("user")) {
 			List<AddableOrderProductResponse> orderProductList = orderServiceClient.findAddableOrderProductList(memberId);
 			for(AddableOrderProductResponse orderProduct : orderProductList){
-				ProductVo productVo = productServiceClient.findProductByProductId(orderProduct.getProductId());
-				SellerVo sellerVo = memberServiceClient.findBySellerId(orderProduct.getSellerId());
+				ProductVo productVo
+						= memberCircuitBreaker.run(
+								()->productServiceClient.findProductByProductId(orderProduct.getProductId()),
+						throwable -> new ProductVo());
+				//ProductVo productVo = productServiceClient.findProductByProductId(orderProduct.getProductId());
+				SellerVo sellerVo
+						= productCircuitBreaker.run(
+						()->memberServiceClient.findBySellerId(orderProduct.getSellerId()),
+						throwable -> new SellerVo());
+				//SellerVo sellerVo = memberServiceClient.findBySellerId(orderProduct.getSellerId());
 				AddableProductResponse addableProductResponse = AddableProductResponse.builder()
 						.productId(productVo.getProductId())
 						.productName(productVo.getProductName())
@@ -204,8 +220,16 @@ public class FeedServiceImpl implements FeedService {
 				addableProductList.add(addableProductResponse);
 			}
 		} else if (memberRole.equals("seller")) {
-			List<ProductVo> productList = productServiceClient.findBySellerId(memberId);
-			SellerVo sellerVo = memberServiceClient.findBySellerId(memberId);
+			List<ProductVo> productList
+					= memberCircuitBreaker.run(
+							()->productServiceClient.findBySellerId(memberId),
+					throwable -> new ArrayList<>());
+			//List<ProductVo> productList = productServiceClient.findBySellerId(memberId);
+			SellerVo sellerVo
+					= productCircuitBreaker.run(
+					()->memberServiceClient.findBySellerId(memberId),
+					throwable -> new SellerVo());
+			//SellerVo sellerVo = memberServiceClient.findBySellerId(memberId);
 
 			for (ProductVo product : productList) {
 				AddableProductResponse addableProductResponse = AddableProductResponse.builder()
@@ -231,6 +255,8 @@ public class FeedServiceImpl implements FeedService {
 	 */
 	@Override
 	public FeedDetailResponse findFeedDetail(Long feedId, Long loginMemberId) {
+		CircuitBreaker memberCircuitBreaker = circuitBreakerFactory.create("memberCircuitbreaker");
+		CircuitBreaker productCircuitBreaker = circuitBreakerFactory.create("productCircuitbreaker");
 
 		FeedDetailResponse feedDetailResponse = new FeedDetailResponse();
 
@@ -253,8 +279,19 @@ public class FeedServiceImpl implements FeedService {
 				List<FeedImageProduct> savedFeedImageProductList = feedImageProductRepository.findByFeedImage(
 						feedImage);
 				for (FeedImageProduct feedImageProduct : savedFeedImageProductList) {
-					ProductVo productVo = productServiceClient.findProductByProductId(feedImageProduct.getProductId());
-					SellerVo sellerVo = memberServiceClient.findBySellerId(productVo.getSellerId());
+					ProductVo productVo
+							= productCircuitBreaker.run(
+									()->productServiceClient.findProductByProductId(feedImageProduct.getProductId()),
+							throwable -> new ProductVo());
+					//ProductVo productVo = productServiceClient.findProductByProductId(feedImageProduct.getProductId());
+					if(productVo.getSellerId()==null){
+						return null;
+					}
+					SellerVo sellerVo
+							= memberCircuitBreaker.run(
+							()->memberServiceClient.findBySellerId(productVo.getSellerId()),
+							throwable -> new SellerVo());
+					//SellerVo sellerVo = memberServiceClient.findBySellerId(productVo.getSellerId());
 
 					ImageProductResponse imageProductResponse = ImageProductResponse.builder()
 							.feedImageId(feedImage.getFeedImageId())
@@ -297,8 +334,13 @@ public class FeedServiceImpl implements FeedService {
 			}
 
 			// feed 작성자와 로그인한 사용자의 팔로우 여부
-			FollowingVo followingStatus = memberServiceClient.findByFollowingMemberIdAndFollowerMemberId(loginMemberId, savedFeed.get().getMemberId());
-			if(followingStatus != null){
+			FollowingVo followingStatus = memberCircuitBreaker.run(
+					()->memberServiceClient
+							.findByFollowingMemberIdAndFollowerMemberId(
+									loginMemberId, savedFeed.get().getMemberId()),
+					throwable -> new FollowingVo());
+			//FollowingVo followingStatus = memberServiceClient.findByFollowingMemberIdAndFollowerMemberId(loginMemberId, savedFeed.get().getMemberId());
+			if(followingStatus != null && followingStatus.getFollowerMemberRole() != null){
 				feedDetailResponse.setFollowStatus(true);
 			}
 
@@ -314,13 +356,19 @@ public class FeedServiceImpl implements FeedService {
 
 			// feed 작성자의 이름과 프로필 이미지
 			if (savedFeed.get().getMemberRole().equals("user")) {
-				UserVo userVo = memberServiceClient.findByUserId(savedFeed.get().getMemberId());
+				UserVo userVo = memberCircuitBreaker.run(
+							()->memberServiceClient.findByUserId(savedFeed.get().getMemberId()),
+						throwable -> new UserVo());
+				//UserVo userVo = memberServiceClient.findByUserId(savedFeed.get().getMemberId());
 				feedDetailResponse.setMemberId(savedFeed.get().getMemberId());
 				feedDetailResponse.setMemberRole(savedFeed.get().getMemberRole());
 				feedDetailResponse.setMemberName(userVo.getUserName());
 				feedDetailResponse.setMemberProfileImg(userVo.getUserProfileImg());
 			} else {
-				SellerVo sellerVo = memberServiceClient.findBySellerId(savedFeed.get().getMemberId());
+				SellerVo sellerVo = memberCircuitBreaker.run(
+						()->memberServiceClient.findBySellerId(savedFeed.get().getMemberId()),
+						throwable -> new SellerVo());
+				//SellerVo sellerVo = memberServiceClient.findBySellerId(savedFeed.get().getMemberId());
 				feedDetailResponse.setMemberId(savedFeed.get().getMemberId());
 				feedDetailResponse.setMemberRole(savedFeed.get().getMemberRole());
 				feedDetailResponse.setMemberName(sellerVo.getSellerName());
@@ -640,9 +688,15 @@ public class FeedServiceImpl implements FeedService {
 	 */
 	@Override
 	public FeedResponseResult findByFollowFeedList(Long loginMemberId, Integer pageNumber) {
+		CircuitBreaker memberCircuitBreaker = circuitBreakerFactory.create("memberCircuitbreaker");
+
 		List<Feed> feedList = new ArrayList<>();
 
-		List<FollowingVo> followers = memberServiceClient.findByFollowingMemberId(loginMemberId);
+		List<FollowingVo> followers
+				= memberCircuitBreaker.run(
+						()->memberServiceClient.findByFollowingMemberId(loginMemberId),
+				throwable -> new ArrayList<>());
+		//List<FollowingVo> followers = memberServiceClient.findByFollowingMemberId(loginMemberId);
 
 		for (FollowingVo follower : followers) {
 			List<Feed> feedListByFollower = feedRepository.findByMemberId(follower.getFollowerMemberId());
@@ -728,6 +782,8 @@ public class FeedServiceImpl implements FeedService {
 	 * @return
 	 */
 	public FeedResponseResult getNoheaderResponses(int size, int startIndex, List<Feed> feedList) {
+		CircuitBreaker memberCircuitBreaker = circuitBreakerFactory.create("memberCircuitbreaker");
+
 		FeedResponseResult responseResult = new FeedResponseResult();
 		List<FeedResponse> responseList = new ArrayList<>();
 
@@ -758,11 +814,17 @@ public class FeedServiceImpl implements FeedService {
 
 
 					if (feed.getMemberRole().equals("user")) { // 유저
-						UserVo user = memberServiceClient.findByUserId(feed.getMemberId());
+						UserVo user = memberCircuitBreaker.run(
+								()->memberServiceClient.findByUserId(feed.getMemberId()),
+								throwable -> new UserVo());
+						//UserVo user = memberServiceClient.findByUserId(feed.getMemberId());
 						response.setMemberName(user.getUserName());
 						response.setMemberProfileImg(user.getUserProfileImg());
 					} else if (feed.getMemberRole().equals("seller")) { // 셀러
-						SellerVo seller = memberServiceClient.findBySellerId(feed.getMemberId());
+						SellerVo seller = memberCircuitBreaker.run(
+								()->memberServiceClient.findBySellerId(feed.getMemberId()),
+								throwable -> new SellerVo());
+						//SellerVo seller = memberServiceClient.findBySellerId(feed.getMemberId());
 						response.setMemberName(seller.getSellerName());
 						response.setMemberProfileImg(seller.getSellerProfileImg());
 					}
@@ -794,11 +856,17 @@ public class FeedServiceImpl implements FeedService {
 					.build();
 
 			if (feed.getMemberRole().equals("user")) { // 유저
-				UserVo user = memberServiceClient.findByUserId(feed.getMemberId());
+				UserVo user = memberCircuitBreaker.run(
+						()->memberServiceClient.findByUserId(feed.getMemberId()),
+						throwable -> new UserVo());
+				//UserVo user = memberServiceClient.findByUserId(feed.getMemberId());
 				response.setMemberName(user.getUserName());
 				response.setMemberProfileImg(user.getUserProfileImg());
 			} else if (feed.getMemberRole().equals("seller")) { // 셀러
-				SellerVo seller = memberServiceClient.findBySellerId(feed.getMemberId());
+				SellerVo seller = memberCircuitBreaker.run(
+						()->memberServiceClient.findBySellerId(feed.getMemberId()),
+						throwable -> new SellerVo());
+				//SellerVo seller = memberServiceClient.findBySellerId(feed.getMemberId());
 				response.setMemberName(seller.getSellerName());
 				response.setMemberProfileImg(seller.getSellerProfileImg());
 			}
@@ -820,11 +888,17 @@ public class FeedServiceImpl implements FeedService {
 	 * @return
 	 */
 	public FeedResponseResult getResponses(int size, int startIndex, List<Feed> feedList, Long loginMemberId) {
+		CircuitBreaker memberCircuitBreaker = circuitBreakerFactory.create("memberCircuitbreaker");
+
 		FeedResponseResult responseResult = new FeedResponseResult();
 		List<FeedResponse> responseList = new ArrayList<>();
 
 		Map<Long,Integer> followMap = new HashMap<>();
-		List<FollowingVo> followings = memberServiceClient.findByFollowingMemberId(loginMemberId);
+		List<FollowingVo> followings
+				= memberCircuitBreaker.run(
+						()->memberServiceClient.findByFollowingMemberId(loginMemberId),
+				throwable -> new ArrayList<>());
+		//List<FollowingVo> followings = memberServiceClient.findByFollowingMemberId(loginMemberId);
 		for(FollowingVo following : followings){
 			followMap.put(following.getFollowerMemberId(), 1);
 		}
@@ -874,11 +948,17 @@ public class FeedServiceImpl implements FeedService {
 					}
 
 					if (feed.getMemberRole().equals("user")) { // 유저
-						UserVo user = memberServiceClient.findByUserId(feed.getMemberId());
+						UserVo user = memberCircuitBreaker.run(
+								()->memberServiceClient.findByUserId(feed.getMemberId()),
+								throwable -> new UserVo());
+						//UserVo user = memberServiceClient.findByUserId(feed.getMemberId());
 						response.setMemberName(user.getUserName());
 						response.setMemberProfileImg(user.getUserProfileImg());
 					} else if (feed.getMemberRole().equals("seller")) { // 셀러
-						SellerVo seller = memberServiceClient.findBySellerId(feed.getMemberId());
+						SellerVo seller = memberCircuitBreaker.run(
+								()->memberServiceClient.findBySellerId(feed.getMemberId()),
+								throwable -> new SellerVo());
+						//SellerVo seller = memberServiceClient.findBySellerId(feed.getMemberId());
 						response.setMemberName(seller.getSellerName());
 						response.setMemberProfileImg(seller.getSellerProfileImg());
 					}
@@ -930,11 +1010,17 @@ public class FeedServiceImpl implements FeedService {
 			}
 
 			if (feed.getMemberRole().equals("user")) { // 유저
-				UserVo user = memberServiceClient.findByUserId(feed.getMemberId());
+				UserVo user = memberCircuitBreaker.run(
+						()->memberServiceClient.findByUserId(feed.getMemberId()),
+						throwable -> new UserVo());
+				//UserVo user = memberServiceClient.findByUserId(feed.getMemberId());
 				response.setMemberName(user.getUserName());
 				response.setMemberProfileImg(user.getUserProfileImg());
 			} else if (feed.getMemberRole().equals("seller")) { // 셀러
-				SellerVo seller = memberServiceClient.findBySellerId(feed.getMemberId());
+				SellerVo seller = memberCircuitBreaker.run(
+						()->memberServiceClient.findBySellerId(feed.getMemberId()),
+						throwable -> new SellerVo());
+				//SellerVo seller = memberServiceClient.findBySellerId(feed.getMemberId());
 				response.setMemberName(seller.getSellerName());
 				response.setMemberProfileImg(seller.getSellerProfileImg());
 			}
@@ -953,6 +1039,9 @@ public class FeedServiceImpl implements FeedService {
 	 * @return List<FeedResponse>
 	 */
 	public WishProductListResult getResponseForWish(int size, int startIndex, List<WishListResponse> wishList){
+		CircuitBreaker productCircuitBreaker = circuitBreakerFactory.create("productCircuitbreaker");
+		CircuitBreaker memberCircuitBreaker = circuitBreakerFactory.create("memberCircuitbreaker");
+
 		WishProductListResult wishProductListResult = new WishProductListResult();
 		List<WishProductListResponse> responseList = new ArrayList<>();
 		if(size < startIndex){
@@ -963,7 +1052,10 @@ public class FeedServiceImpl implements FeedService {
 		if(size < startIndex + pageContentNumber) {
 			for (WishListResponse wish : wishList.subList(startIndex, size)) {
 				if (wish != null) {
-					List<ReviewVo> reviews = productServiceClient.findReviewByProductId(wish.getProductId());
+					List<ReviewVo> reviews = productCircuitBreaker.run(
+							()->productServiceClient.findReviewByProductId(wish.getProductId()),
+							throwable -> new ArrayList<>());
+					//List<ReviewVo> reviews = productServiceClient.findReviewByProductId(wish.getProductId());
 					Long sumOfReviewCount = 0L;
 					int reviewCount = 0;
 					Long reviewRate = 0L;
@@ -978,7 +1070,10 @@ public class FeedServiceImpl implements FeedService {
 						reviewCount = 0;
 					}
 
-					SellerVo sellerVo = memberServiceClient.findBySellerId(wish.getSellerId());
+					SellerVo sellerVo = memberCircuitBreaker.run(
+							()->memberServiceClient.findBySellerId(wish.getSellerId()),
+							throwable -> new SellerVo());
+					//SellerVo sellerVo = memberServiceClient.findBySellerId(wish.getSellerId());
 					WishProductListResponse wishProductListResponse = WishProductListResponse.builder()
 							.productId(wish.getProductId())
 							.productName(wish.getProductName())
@@ -1001,7 +1096,11 @@ public class FeedServiceImpl implements FeedService {
 
 		for (WishListResponse wish : wishList.subList(startIndex, startIndex + pageContentNumber)) {
 			if (wish != null) {
-				List<ReviewVo> reviews = productServiceClient.findReviewByProductId(wish.getProductId());
+				List<ReviewVo> reviews
+						= productCircuitBreaker.run(
+								()->productServiceClient.findReviewByProductId(wish.getProductId()),
+						throwable -> new ArrayList<>());
+				//List<ReviewVo> reviews = productServiceClient.findReviewByProductId(wish.getProductId());
 				Long sumOfReviewCount = 0L;
 				int reviewCount = 0;
 				Long reviewRate = 0L;
@@ -1016,7 +1115,10 @@ public class FeedServiceImpl implements FeedService {
 					reviewCount = 0;
 				}
 
-				SellerVo sellerVo = memberServiceClient.findBySellerId(wish.getSellerId());
+				SellerVo sellerVo = memberCircuitBreaker.run(
+						()->memberServiceClient.findBySellerId(wish.getSellerId()),
+						throwable -> new SellerVo());
+				//SellerVo sellerVo = memberServiceClient.findBySellerId(wish.getSellerId());
 				WishProductListResponse wishProductListResponse = WishProductListResponse.builder()
 						.productId(wish.getProductId())
 						.productName(wish.getProductName())
@@ -1059,6 +1161,8 @@ public class FeedServiceImpl implements FeedService {
 
 	@Override
 	public List<ProfileMainScrapResponse> findByMemberScrapList(ProfileMainScrapDto profileMainScrapDto) {
+		CircuitBreaker memberCircuitBreaker = circuitBreakerFactory.create("memberCircuitbreaker");
+
 		PageRequest pageRequest = PageRequest.of(0, 8, Sort.by("scrapId").descending());
 		Long memberId = profileMainScrapDto.getMemberId();
 		List<ProfileMainScrapResponse> responseList = new ArrayList<>();
@@ -1073,11 +1177,19 @@ public class FeedServiceImpl implements FeedService {
 
 			Optional<Feed> savedFeed = feedRepository.findById(scrap.getFeed().getFeedId());
 			if(savedFeed.get().getMemberRole().equals("user")) {
-				UserVo user = memberServiceClient.findByUserId(savedFeed.get().getMemberId());
+				UserVo user
+						= memberCircuitBreaker.run(
+								()->memberServiceClient.findByUserId(savedFeed.get().getMemberId()),
+						throwable -> new UserVo());
+				//UserVo user = memberServiceClient.findByUserId(savedFeed.get().getMemberId());
 				profileMainScrapResponse.setMemberName(user.getUserName());
 			}
 			else{
-				SellerVo seller = memberServiceClient.findBySellerId(savedFeed.get().getMemberId());
+				SellerVo seller
+						= memberCircuitBreaker.run(
+						()->memberServiceClient.findBySellerId(savedFeed.get().getMemberId()),
+						throwable -> new SellerVo());
+				//SellerVo seller = memberServiceClient.findBySellerId(savedFeed.get().getMemberId());
 				profileMainScrapResponse.setMemberName(seller.getSellerName());
 			}
 			responseList.add(profileMainScrapResponse);
@@ -1087,6 +1199,8 @@ public class FeedServiceImpl implements FeedService {
 
 	@Override
 	public List<ProfileMainWishResponse> findWishListByMember(ProfileMainWishDto profileMainWishDto) {
+		CircuitBreaker productCircuitBreaker = circuitBreakerFactory.create("productCircuitbreaker");
+
 		PageRequest pageRequest = PageRequest.of(0, 8, Sort.by("wishId").descending());
 		Long memberId = profileMainWishDto.getMemberId();
 		List<ProfileMainWishResponse> responseList = new ArrayList<>();
@@ -1095,7 +1209,10 @@ public class FeedServiceImpl implements FeedService {
 				.pageRequest(pageRequest)
 				.build();
 
-		List<WishVo> wishList = productServiceClient.findWishListByMemberId(wishPageVo, memberId);
+		List<WishVo> wishList = productCircuitBreaker.run(
+				()->productServiceClient.findWishListByMemberId(wishPageVo, memberId),
+				throwable -> new ArrayList<>());
+		//List<WishVo> wishList = productServiceClient.findWishListByMemberId(wishPageVo, memberId);
 		for(WishVo wish : wishList){
 			ProductVo product = productServiceClient.findProductByProductId(wish.getProductId());
 			ProfileMainWishResponse profileMainWishResponse = ProfileMainWishResponse.builder()
@@ -1158,10 +1275,15 @@ public class FeedServiceImpl implements FeedService {
 
 	@Override
 	public WishProductListResult findByMemberWishDetailList(ProfileMainWishDto profileMainWishDto) {
+		CircuitBreaker productCircuitBreaker = circuitBreakerFactory.create("productCircuitbreaker");
 
 		Long memberId = profileMainWishDto.getMemberId();
 
-		List<WishListResponse> wishList = productServiceClient.findWishProductListByMember(memberId);
+		List<WishListResponse> wishList
+				= productCircuitBreaker.run(
+						()->productServiceClient.findWishProductListByMember(memberId),
+				throwable -> new ArrayList<>());
+		//List<WishListResponse> wishList = productServiceClient.findWishProductListByMember(memberId);
 
 		int startIndex = profileMainWishDto.getPageNumber() * pageContentNumber;
 		int size = wishList.size();
@@ -1181,12 +1303,16 @@ public class FeedServiceImpl implements FeedService {
 
 	@Override
 	public MemberProfileCountResponse getFeedScrapWishCount(MemberProfileDto memberProfileDto) {
+		CircuitBreaker productCircuitBreaker = circuitBreakerFactory.create("productCircuitbreaker");
 
 		List<Feed> feedList = feedRepository.findFeedListByMemberId(memberProfileDto.getMemberId());
 		List<Scrap> scrapList = scrapRepository.findScrapListByMemberId(memberProfileDto.getMemberId());
 
 		if(memberProfileDto.getMemberRole().equals("user")) {
-			List<WishListResponse> wishList = productServiceClient.findWishProductListByMember(memberProfileDto.getMemberId());
+			List<WishListResponse> wishList = productCircuitBreaker.run(
+						()->productServiceClient.findWishProductListByMember(memberProfileDto.getMemberId()),
+					throwable -> new ArrayList<>());
+			//List<WishListResponse> wishList = productServiceClient.findWishProductListByMember(memberProfileDto.getMemberId());
 
 			MemberProfileCountResponse memberProfileCountResponse = MemberProfileCountResponse.builder()
 					.photoCount(feedList.size())
@@ -1197,7 +1323,10 @@ public class FeedServiceImpl implements FeedService {
 			return memberProfileCountResponse;
 		}
 		else{
-			List<ProductVo> productList = productServiceClient.findBySellerId(memberProfileDto.getMemberId());
+			List<ProductVo> productList = productCircuitBreaker.run(
+					()->productServiceClient.findBySellerId(memberProfileDto.getMemberId()),
+					throwable -> new ArrayList<>());
+			//List<ProductVo> productList = productServiceClient.findBySellerId(memberProfileDto.getMemberId());
 
 			MemberProfileCountResponse memberProfileCountResponse = MemberProfileCountResponse.builder()
 					.photoCount(feedList.size())
