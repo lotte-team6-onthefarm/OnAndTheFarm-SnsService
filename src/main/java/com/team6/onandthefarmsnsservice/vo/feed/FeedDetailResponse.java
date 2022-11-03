@@ -59,4 +59,6 @@ public class FeedDetailResponse {
 
     private Boolean followStatus;
 
+    private Long feedNumber;
+
 }

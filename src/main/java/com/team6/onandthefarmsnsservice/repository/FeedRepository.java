@@ -24,4 +24,6 @@ public interface FeedRepository extends JpaRepository<Feed, Long> {
 
     @Query("select f from Feed f where f.feedId=:feedId and f.feedStatus=true")
     Optional<Feed> findByIdAndStatus(Long feedId);
+
+    Optional<Feed> findFeedByFeedNumber(Long feedNumber);
 }
