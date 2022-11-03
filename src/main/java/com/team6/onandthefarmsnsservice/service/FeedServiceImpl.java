@@ -129,6 +129,11 @@ public class FeedServiceImpl implements FeedService {
 	@Override
 	public Long uploadFeed(Long memberId, String memberRole, FeedInfoDto feedInfoDto) throws IOException {
 
+		Long feedNumber = null;
+		if(memberRole.equals("user")) {
+			feedNumber = System.currentTimeMillis(); //임시 생성 방법
+		}
+
 		Feed feed = new Feed();
 		feed.setMemberId(memberId);
 		feed.setMemberRole(memberRole);
@@ -140,6 +145,7 @@ public class FeedServiceImpl implements FeedService {
 		feed.setFeedScrapCount(0);
 		feed.setFeedCommentCount(0);
 		feed.setFeedStatus(true);
+		feed.setFeedNumber(feedNumber);
 		feed.setFeedCreateAt(dateUtils.transDate(env.getProperty("dateutils.format")));
 
 		//피드 추가
@@ -326,6 +332,7 @@ public class FeedServiceImpl implements FeedService {
 					.feedLikeStatus(false)
 					.scrapStatus(false)
 					.followStatus(false)
+					.feedNumber(feedEntity.getFeedNumber())
 					.build();
 
 			// feed 작성자와 로그인한 사용자가 같은지 여부

@@ -48,4 +48,6 @@ public class Feed {
 
     private Integer feedCommentCount;
 
+    private Long feedNumber;
+
 }
