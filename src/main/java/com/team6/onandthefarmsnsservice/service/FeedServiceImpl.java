@@ -1216,11 +1216,11 @@ public class FeedServiceImpl implements FeedService {
 				.pageRequest(pageRequest)
 				.build();
 
-		List<WishVo> wishList = productCircuitBreaker.run(
-				()->productServiceClient.findWishListByMemberId(wishPageVo, memberId),
-				throwable -> new ArrayList<>());
-		//List<WishVo> wishList = productServiceClient.findWishListByMemberId(wishPageVo, memberId);
-		for(WishVo wish : wishList){
+		// List<WishVo> wishList = productCircuitBreaker.run(
+		// 		()->productServiceClient.findWishListByMemberId(wishPageVo, memberId),
+		// 		throwable -> new ArrayList<>());
+		List<WishListResponse> wishListResponses = productServiceClient.findWishListByMemberId(wishPageVo, memberId);
+		for(WishListResponse wish : wishListResponses){
 			ProductVo product = productServiceClient.findProductByProductId(wish.getProductId());
 			ProfileMainWishResponse profileMainWishResponse = ProfileMainWishResponse.builder()
 					.productId(product.getProductId())
