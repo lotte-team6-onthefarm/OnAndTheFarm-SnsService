@@ -1208,16 +1208,16 @@ public class FeedServiceImpl implements FeedService {
 	public List<ProfileMainWishResponse> findWishListByMember(ProfileMainWishDto profileMainWishDto) {
 		CircuitBreaker productCircuitBreaker = circuitBreakerFactory.create("productCircuitbreaker");
 
-		PageRequest pageRequest = PageRequest.of(0, 8, Sort.by("wishId").descending());
+		//PageRequest pageRequest = PageRequest.of(0, 8, Sort.by("wishId").descending());
 		Long memberId = profileMainWishDto.getMemberId();
 		List<ProfileMainWishResponse> responseList = new ArrayList<>();
-		WishPageVo wishPageVo = WishPageVo.builder()
-				.pageNumber(profileMainWishDto.getPageNumber())
-				.pageRequest(pageRequest)
-				.build();
+		// WishPageVo wishPageVo = WishPageVo.builder()
+		// 		.pageNumber(profileMainWishDto.getPageNumber())
+		// 		.pageRequest(pageRequest)
+		// 		.build();
 
 		List<WishVo> wishList = productCircuitBreaker.run(
-				()->productServiceClient.findWishListByMemberId(wishPageVo, memberId),
+				()->productServiceClient.findWishListByMemberId(memberId),
 				throwable -> new ArrayList<>());
 		// List<WishListResponse> wishListResponses = productServiceClient.findWishListByMemberId(wishPageVo, memberId);
 		for(WishVo wish : wishList){
