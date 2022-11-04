@@ -48,8 +48,7 @@ public interface FeedService {
 
     List<ProfileMainScrapResponse> findByMemberScrapList(ProfileMainScrapDto profileMainScrapDto);
 
-    List<ProfileMainWishResponse>
-    findWishListByMember(ProfileMainWishDto profileMainWishDto);
+    List<ProfileMainWishResponse> findWishListByMember(ProfileMainWishDto profileMainWishDto);
 
     WishProductListResult findByMemberWishDetailList(ProfileMainWishDto profileMainWishDto);
 
