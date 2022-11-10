@@ -19,7 +19,7 @@ public class OrderServiceClientController {
         this.orderServiceClientService = orderServiceClientService;
     }
 
-    @GetMapping("/api/user/feed/sns-service/{feed-no}")
+    @GetMapping("/api/feign/user/feed/sns-service/{feed-no}")
     FeedVo findByFeedNumber(@PathVariable("feed-no") Long feedNumber){
         return orderServiceClientService.findFeedByFeedNumber(feedNumber);
     }
