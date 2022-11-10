@@ -13,24 +13,24 @@ import java.util.List;
 
 @FeignClient(name = "member-service")
 public interface MemberServiceClient {
-    @GetMapping("/api/user/members/member-service/{user-no}")
+    @GetMapping("/api/feign/user/members/member-service/{user-no}")
     UserVo findByUserId(@PathVariable("user-no")Long userId);
 
-    @GetMapping("/api/seller/members/member-service/{seller-no}")
+    @GetMapping("/api/feign/seller/members/member-service/{seller-no}")
     SellerVo findBySellerId(@PathVariable("seller-no")Long sellerId);
 
-    @GetMapping("/api/user/members/member-service/following/list/{member-no}")
+    @GetMapping("/api/feign/user/members/member-service/following/list/{member-no}")
     List<FollowingVo> findByFollowingMemberId(@PathVariable("member-no")Long memberId);
 
     //구현아직임 -jiny-
-    @GetMapping("/api/user/members/member-service/get-user/{member-no}")
+    @GetMapping("/api/feign/user/members/member-service/get-user/{member-no}")
     UserVo getUserByUserId(@PathVariable("member-no")Long memberId);
 
     //구현아직임 -jiny-
-    @GetMapping("/api/seller/members/member-service/get-seller/{member-no}")
+    @GetMapping("/api/feign/seller/members/member-service/get-seller/{member-no}")
     SellerVo getSellerBySellerId(@PathVariable("member-no")Long memberId);
 
-    @GetMapping("/api/user/members/member-service/following")
+    @GetMapping("/api/feign/user/members/member-service/following")
     FollowingVo findByFollowingMemberIdAndFollowerMemberId(@RequestParam Long followingMemberId, @RequestParam Long followerMemberId);
 
 }

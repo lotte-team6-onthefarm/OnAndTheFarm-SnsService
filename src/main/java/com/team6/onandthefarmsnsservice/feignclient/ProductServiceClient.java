@@ -17,18 +17,18 @@ import org.springframework.web.bind.annotation.RequestBody;
 @FeignClient(name = "product-service")
 public interface ProductServiceClient {
 
-	@GetMapping("/api/user/product/product-service/wish/{user-no}")
+	@GetMapping("/api/feign/user/product/product-service/wish/{user-no}")
 	List<WishListResponse> findWishProductListByMember(@PathVariable("user-no") Long memberId);
 
-	@GetMapping("/api/user/product/product-service/wish-list/{user-no}")
+	@GetMapping("/api/feign/user/product/product-service/wish-list/{user-no}")
 	List<WishVo> findWishListByMemberId(@PathVariable("user-no")Long memberId);
 
-	@GetMapping("/api/user/product/product-service/product/{product-no}")
+	@GetMapping("/api/feign/user/product/product-service/product/{product-no}")
 	ProductVo findProductByProductId(@PathVariable("product-no") Long productId);
 
-	@GetMapping("/api/seller/product/product-service/product/list/{seller-no}")
+	@GetMapping("/api/feign/seller/product/product-service/product/list/{seller-no}")
 	List<ProductVo> findBySellerId(@PathVariable("seller-no") Long sellerId);
 
-	@GetMapping("/api/user/product/product-service/review/{product-no}")
+	@GetMapping("/api/feign/user/product/product-service/review/{product-no}")
 	List<ReviewVo> findReviewByProductId(@PathVariable("product-no") Long productId);
 }
