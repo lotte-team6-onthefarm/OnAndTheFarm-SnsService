@@ -9,4 +9,7 @@ public class ImageProductInfo {
 
     private Integer imageIndex;
     private Long productId;
+    private Integer posX;
+    private Integer posY;
+
 }

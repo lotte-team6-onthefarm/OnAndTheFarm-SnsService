@@ -29,7 +29,7 @@ public class FeedImageProduct {
 
     private Long productId;
 
-    private Double positionX;
+    private Integer positionX;
 
-    private Double positionY;
+    private Integer positionY;
 }
