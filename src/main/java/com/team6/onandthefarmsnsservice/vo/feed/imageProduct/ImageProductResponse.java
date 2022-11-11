@@ -18,4 +18,8 @@ public class ImageProductResponse {
     private String productMainImgSrc;
 
     private String sellerName;
+
+    private Integer posX;
+
+    private Integer posY;
 }
