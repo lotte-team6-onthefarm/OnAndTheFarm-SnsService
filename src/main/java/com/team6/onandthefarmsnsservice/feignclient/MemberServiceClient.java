@@ -3,11 +3,10 @@ package com.team6.onandthefarmsnsservice.feignclient;
 import com.team6.onandthefarmsnsservice.vo.user.FollowingVo;
 import com.team6.onandthefarmsnsservice.vo.user.SellerVo;
 
+import com.team6.onandthefarmsnsservice.vo.user.UserIdVo;
 import com.team6.onandthefarmsnsservice.vo.user.UserVo;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -32,5 +31,8 @@ public interface MemberServiceClient {
 
     @GetMapping("/api/feign/user/members/member-service/following")
     FollowingVo findByFollowingMemberIdAndFollowerMemberId(@RequestParam Long followingMemberId, @RequestParam Long followerMemberId);
+
+    @PostMapping("/api/feign/user/members/member-service/share/point")
+    Boolean updateUserPoint(@RequestBody UserIdVo userIdVo);
 
 }

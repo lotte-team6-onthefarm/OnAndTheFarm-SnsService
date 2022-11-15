@@ -16,7 +16,7 @@ public interface FeedService {
 
     List<AddableProductResponse> findAddableProducts(Long memberId, String memberRole);
 
-    FeedDetailResponse findFeedDetail(Long feedId, Long loginMemberId);
+    FeedDetailResponse findFeedDetail(Long feedId, Long loginMemberId, Long feedNumber);
 
     Long modifyFeed(Long memberId, FeedInfoDto feedInfoDto);
 

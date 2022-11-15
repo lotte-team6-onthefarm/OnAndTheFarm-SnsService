@@ -67,13 +67,19 @@ public class FeedContentController {
 
     @GetMapping("/feed/detail")
     @ApiOperation("sns 피드 상세페이지")
-    public ResponseEntity<BaseResponse<FeedDetailResponse>> findFeedDetail(@ApiIgnore Principal principal, @RequestParam Long feedId){
+    public ResponseEntity<BaseResponse<FeedDetailResponse>> findFeedDetail(@ApiIgnore Principal principal, @RequestParam Map<String, String> request){
 
-        Long loginMemberId = 0l;
+        Long loginMemberId = 0L;
+        Long feedId = Long.parseLong(request.get("feedId"));
+        Long feedNumber = null;
 
         if(principal != null){
             String[] principalInfo = principal.getName().split(" ");
             loginMemberId = Long.parseLong(principalInfo[0]);
+        }
+
+        if(request.containsKey("feedNumber")){
+            feedNumber = Long.parseLong(request.get("feedNumber"));
         }
 
         //조회수 증가
@@ -82,7 +88,7 @@ public class FeedContentController {
             return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        FeedDetailResponse feedDetailResponse = feedService.findFeedDetail(feedId, loginMemberId);
+        FeedDetailResponse feedDetailResponse = feedService.findFeedDetail(feedId, loginMemberId, feedNumber);
 
         BaseResponse baseResponse = BaseResponse.builder()
                 .httpStatus(HttpStatus.OK)

@@ -14,6 +14,7 @@ import com.team6.onandthefarmsnsservice.utils.S3Upload;
 import com.team6.onandthefarmsnsservice.vo.feed.FeedResponse;
 import com.team6.onandthefarmsnsservice.vo.orders.AddableOrderProductResponse;
 import com.team6.onandthefarmsnsservice.vo.product.*;
+import com.team6.onandthefarmsnsservice.vo.user.UserIdVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
@@ -262,7 +263,7 @@ public class FeedServiceImpl implements FeedService {
 	 * @return FeedDetailResponse
 	 */
 	@Override
-	public FeedDetailResponse findFeedDetail(Long feedId, Long loginMemberId) {
+	public FeedDetailResponse findFeedDetail(Long feedId, Long loginMemberId, Long feedNumber) {
 		CircuitBreaker memberCircuitBreaker = circuitBreakerFactory.create("memberCircuitbreaker");
 		CircuitBreaker productCircuitBreaker = circuitBreakerFactory.create("productCircuitbreaker");
 
@@ -386,6 +387,15 @@ public class FeedServiceImpl implements FeedService {
 				feedDetailResponse.setMemberProfileImg(sellerVo.getSellerProfileImg());
 			}
 
+			// feedNumber값이 넘어온다면 Feed 작성자에게 point 지급
+			if(feedNumber != null && feedNumber.equals(feedEntity.getFeedNumber())){
+				if(feedEntity.getMemberRole().equals("user")) {
+					UserIdVo userIdVo = UserIdVo.builder()
+							.userId(feedEntity.getMemberId())
+							.build();
+					memberServiceClient.updateUserPoint(userIdVo);
+				}
+			}
 		}
 
 		return feedDetailResponse;
