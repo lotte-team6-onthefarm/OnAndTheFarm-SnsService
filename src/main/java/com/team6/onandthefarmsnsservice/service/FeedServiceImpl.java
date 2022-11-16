@@ -1169,13 +1169,16 @@ public class FeedServiceImpl implements FeedService {
 		Page<Feed> feedList = feedRepository.findMainFeedListByMemberId(pageRequest, memberId);
 		List<ProfileMainFeedResponse> responseList = new ArrayList<>();
 		for (Feed feed : feedList) {
-			FeedImage feedThumbnailImage = feedImageRepository.findByFeed(feed).get(0);
-			ProfileMainFeedResponse profileMainFeedResponse = ProfileMainFeedResponse.builder()
-					.feedId(feed.getFeedId())
-					.feedImageId(feedThumbnailImage.getFeedImageId())
-					.feedImageSrc(feedThumbnailImage.getFeedImageSrc())
-					.build();
-			responseList.add(profileMainFeedResponse);
+			List<FeedImage> feedThumbnailImageList = feedImageRepository.findByFeed(feed);
+			if(feedThumbnailImageList.size() > 0) {
+				FeedImage feedThumbnailImage = feedThumbnailImageList.get(0);
+				ProfileMainFeedResponse profileMainFeedResponse = ProfileMainFeedResponse.builder()
+						.feedId(feed.getFeedId())
+						.feedImageId(feedThumbnailImage.getFeedImageId())
+						.feedImageSrc(feedThumbnailImage.getFeedImageSrc())
+						.build();
+				responseList.add(profileMainFeedResponse);
+			}
 		}
 		return responseList;
 	}
@@ -1189,31 +1192,33 @@ public class FeedServiceImpl implements FeedService {
 		List<ProfileMainScrapResponse> responseList = new ArrayList<>();
 		Page<Scrap> scrapList = scrapRepository.findMainScrapListByMemberId(pageRequest, memberId);
 		for (Scrap scrap : scrapList) {
-			FeedImage feedImage = feedImageRepository.findByFeed(scrap.getFeed()).get(0);
-			ProfileMainScrapResponse profileMainScrapResponse = ProfileMainScrapResponse.builder()
-					.feedId(scrap.getFeed().getFeedId())
-					.feedImageId(feedImage.getFeedImageId())
-					.feedImageSrc(feedImage.getFeedImageSrc())
-					.build();
+			List<FeedImage> feedImageList = feedImageRepository.findByFeed(scrap.getFeed());
+			if(feedImageList.size() > 0) {
+				FeedImage feedImage = feedImageList.get(0);
+				ProfileMainScrapResponse profileMainScrapResponse = ProfileMainScrapResponse.builder()
+						.feedId(scrap.getFeed().getFeedId())
+						.feedImageId(feedImage.getFeedImageId())
+						.feedImageSrc(feedImage.getFeedImageSrc())
+						.build();
 
-			Optional<Feed> savedFeed = feedRepository.findById(scrap.getFeed().getFeedId());
-			if(savedFeed.get().getMemberRole().equals("user")) {
-				UserVo user
-						= memberCircuitBreaker.run(
-								()->memberServiceClient.findByUserId(savedFeed.get().getMemberId()),
-						throwable -> new UserVo());
-				//UserVo user = memberServiceClient.findByUserId(savedFeed.get().getMemberId());
-				profileMainScrapResponse.setMemberName(user.getUserName());
+				Optional<Feed> savedFeed = feedRepository.findById(scrap.getFeed().getFeedId());
+				if (savedFeed.get().getMemberRole().equals("user")) {
+					UserVo user
+							= memberCircuitBreaker.run(
+							() -> memberServiceClient.findByUserId(savedFeed.get().getMemberId()),
+							throwable -> new UserVo());
+					//UserVo user = memberServiceClient.findByUserId(savedFeed.get().getMemberId());
+					profileMainScrapResponse.setMemberName(user.getUserName());
+				} else {
+					SellerVo seller
+							= memberCircuitBreaker.run(
+							() -> memberServiceClient.findBySellerId(savedFeed.get().getMemberId()),
+							throwable -> new SellerVo());
+					//SellerVo seller = memberServiceClient.findBySellerId(savedFeed.get().getMemberId());
+					profileMainScrapResponse.setMemberName(seller.getSellerName());
+				}
+				responseList.add(profileMainScrapResponse);
 			}
-			else{
-				SellerVo seller
-						= memberCircuitBreaker.run(
-						()->memberServiceClient.findBySellerId(savedFeed.get().getMemberId()),
-						throwable -> new SellerVo());
-				//SellerVo seller = memberServiceClient.findBySellerId(savedFeed.get().getMemberId());
-				profileMainScrapResponse.setMemberName(seller.getSellerName());
-			}
-			responseList.add(profileMainScrapResponse);
 		}
 		return responseList;
 	}
