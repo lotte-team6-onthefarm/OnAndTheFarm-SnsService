@@ -4,10 +4,11 @@ import java.util.List;
 
 import com.team6.onandthefarmsnsservice.dto.comment.CommentInfoDto;
 import com.team6.onandthefarmsnsservice.vo.comment.CommentDetailResponse;
+import com.team6.onandthefarmsnsservice.vo.comment.CommentResponse;
 
 public interface CommentService {
 
-    List<CommentDetailResponse> findCommentDetail(Long feedId, Long memberId);
+    CommentResponse findCommentDetail(Long feedId, Long memberId);
 
     Long addComment(CommentInfoDto commentInfoDto);
 

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import com.team6.onandthefarmsnsservice.feignclient.MemberServiceClient;
+import com.team6.onandthefarmsnsservice.vo.comment.CommentResponse;
 import com.team6.onandthefarmsnsservice.vo.user.UserVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
@@ -50,11 +51,10 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public List<CommentDetailResponse> findCommentDetail(Long feedId, Long memberId) {
+    public CommentResponse findCommentDetail(Long feedId, Long memberId) {
         CircuitBreaker circuitBreaker = circuitBreakerFactory.create("memberCircuitbreaker");
 
         List<CommentDetailResponse> commentDetailList = new ArrayList<>();
-
         List<FeedComment> feedCommentList = feedCommentRepository.findByFeedId(feedId);
         for(FeedComment feedComment : feedCommentList){
 
@@ -94,7 +94,11 @@ public class CommentServiceImpl implements CommentService {
             commentDetailList.add(commentDetail);
         }
 
-        return commentDetailList;
+        CommentResponse commentResponse = new CommentResponse();
+        commentResponse.setCommentList(commentDetailList);
+        commentResponse.setCommentCount(commentDetailList.size());
+
+        return commentResponse;
     }
 
     @Override
@@ -109,8 +113,10 @@ public class CommentServiceImpl implements CommentService {
         feedComment.setFeedCommentContent(commentInfoDto.getFeedCommentContent());
         feedComment.setFeedCommentCreateAt(dateUtils.transDate(env.getProperty("dateutils.format")));
         feedComment.setFeedCommentStatus(true);
-
         FeedComment savedFeedComment = feedCommentRepository.save(feedComment);
+
+        feed.get().setFeedCommentCount(feed.get().getFeedCommentCount()+1);
+
         return savedFeedComment.getFeedCommnetId();
     }
 
@@ -139,6 +145,9 @@ public class CommentServiceImpl implements CommentService {
         if(feedComment.isPresent()){
             if(feedComment.get().getMemberId().equals(commentInfoDto.getMemberId())) {
                 feedComment.get().setFeedCommentStatus(false);
+
+                Optional<Feed> savedFeed = feedRepository.findById(feedComment.get().getFeed().getFeedId());
+                savedFeed.get().setFeedCommentCount(savedFeed.get().getFeedCommentCount()-1);
 
                 return feedComment.get().getFeedCommnetId();
             }
