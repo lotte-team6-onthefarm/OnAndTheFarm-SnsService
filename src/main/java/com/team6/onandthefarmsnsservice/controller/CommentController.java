@@ -5,6 +5,7 @@ import com.team6.onandthefarmsnsservice.service.CommentService;
 import com.team6.onandthefarmsnsservice.utils.BaseResponse;
 import com.team6.onandthefarmsnsservice.vo.comment.CommentDetailResponse;
 import com.team6.onandthefarmsnsservice.vo.comment.CommentRequest;
+import com.team6.onandthefarmsnsservice.vo.comment.CommentResponse;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -125,7 +126,7 @@ public class CommentController {
 
     @GetMapping("/list")
     @ApiOperation("피드 댓글 조회")
-    public ResponseEntity<BaseResponse<List<CommentDetailResponse>>> findComment(@ApiIgnore Principal principal, @RequestParam Long feedId){
+    public ResponseEntity<BaseResponse<CommentResponse>> findComment(@ApiIgnore Principal principal, @RequestParam Long feedId){
 
         Long memberId = 0l;
 
@@ -134,14 +135,14 @@ public class CommentController {
             memberId = Long.parseLong(principalInfo[0]);
         }
 
-        List<CommentDetailResponse> commentList = commentService.findCommentDetail(feedId, memberId);
+        CommentResponse commentResponse = commentService.findCommentDetail(feedId, memberId);
 
         BaseResponse baseResponse = BaseResponse.builder()
                 .httpStatus(HttpStatus.OK)
                 .message("find comment success")
-                .data(commentList)
+                .data(commentResponse)
                 .build();
-        if(commentList == null){
+        if(commentResponse == null){
             baseResponse = BaseResponse.builder()
                     .httpStatus(HttpStatus.BAD_REQUEST)
                     .message("find comment fail")
