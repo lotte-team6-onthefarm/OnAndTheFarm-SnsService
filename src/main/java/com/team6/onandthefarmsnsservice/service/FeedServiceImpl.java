@@ -263,7 +263,7 @@ public class FeedServiceImpl implements FeedService {
 	 * @return FeedDetailResponse
 	 */
 	@Override
-	public FeedDetailResponse findFeedDetail(Long feedId, Long loginMemberId, Long feedNumber) {
+	public FeedDetailResponse findFeedDetail(Long feedId, Long loginMemberId) {
 		CircuitBreaker memberCircuitBreaker = circuitBreakerFactory.create("memberCircuitbreaker");
 		CircuitBreaker productCircuitBreaker = circuitBreakerFactory.create("productCircuitbreaker");
 
@@ -386,16 +386,6 @@ public class FeedServiceImpl implements FeedService {
 				feedDetailResponse.setMemberName(sellerVo.getSellerName());
 				feedDetailResponse.setMemberProfileImg(sellerVo.getSellerProfileImg());
 			}
-
-			// feedNumber값이 넘어온다면 Feed 작성자에게 point 지급
-			if(feedNumber != null && feedNumber.equals(feedEntity.getFeedNumber())){
-				if(feedEntity.getMemberRole().equals("user")) {
-					UserIdVo userIdVo = UserIdVo.builder()
-							.userId(feedEntity.getMemberId())
-							.build();
-					memberServiceClient.updateUserPoint(userIdVo);
-				}
-			}
 		}
 
 		return feedDetailResponse;
@@ -495,6 +485,31 @@ public class FeedServiceImpl implements FeedService {
 			savedFeed.get().setFeedShareCount(savedFeed.get().getFeedShareCount() + 1);
 			return true;
 		}
+		return false;
+	}
+
+	/**
+	 * 공유된 피드로 접근 시 포인트 지급하는 메서드
+	 *
+	 * @param feedNumber
+	 * @return Boolean
+	 */
+	@Override
+	public Boolean updateSharePoint(Long feedNumber) {
+		Optional<Feed> savedFeed = feedRepository.findFeedByFeedNumber(feedNumber);
+		if(savedFeed.isPresent()) {
+			if(savedFeed.get().getMemberRole().equals("user")) {
+				UserIdVo userIdVo = UserIdVo.builder()
+						.userId(savedFeed.get().getMemberId())
+						.build();
+
+				Boolean updateStatus = memberServiceClient.updateUserPoint(userIdVo);
+				if(updateStatus) {
+					return true;
+				}
+			}
+		}
+
 		return false;
 	}
 

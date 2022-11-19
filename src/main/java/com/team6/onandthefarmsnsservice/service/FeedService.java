@@ -16,7 +16,7 @@ public interface FeedService {
 
     List<AddableProductResponse> findAddableProducts(Long memberId, String memberRole);
 
-    FeedDetailResponse findFeedDetail(Long feedId, Long loginMemberId, Long feedNumber);
+    FeedDetailResponse findFeedDetail(Long feedId, Long loginMemberId);
 
     Long modifyFeed(Long memberId, FeedInfoDto feedInfoDto);
 
@@ -25,6 +25,8 @@ public interface FeedService {
     Boolean upViewCount(Long feedId);
 
     Boolean upShareCount(Long feedId);
+
+    Boolean updateSharePoint(Long feedNumber);
 
     FeedResponseResult findByFeedTag(String feedTagName, Integer pageNumber, Long loginMemberId);
 
