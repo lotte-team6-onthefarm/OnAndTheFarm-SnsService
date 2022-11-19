@@ -35,13 +35,12 @@ public class ProfileController {
 
 		ProfileMainFeedDto profileMainFeedDto = new ProfileMainFeedDto();
 
-		Long memberId = null;
 		if(request.containsKey("memberId")){
 			profileMainFeedDto.setMemberId(Long.parseLong(request.get("memberId")));
 		}
 		else {
 			String[] principalInfo = principal.getName().split(" ");
-			memberId = Long.parseLong(principalInfo[0]);
+			Long memberId = Long.parseLong(principalInfo[0]);
 			profileMainFeedDto.setMemberId(memberId);
 		}
 
@@ -63,13 +62,12 @@ public class ProfileController {
 
 		ProfileMainScrapDto profileMainScrapDto = new ProfileMainScrapDto();
 
-		Long memberId = null;
 		if(request.containsKey("memberId")) {
 			profileMainScrapDto.setMemberId(Long.parseLong(request.get("memberId")));
 		}
 		else {
 			String[] principalInfo = principal.getName().split(" ");
-			memberId = Long.parseLong(principalInfo[0]);
+			Long memberId = Long.parseLong(principalInfo[0]);
 			profileMainScrapDto.setMemberId(memberId);
 		}
 
@@ -91,13 +89,12 @@ public class ProfileController {
 
 		ProfileMainWishDto profileMainWishDto = new ProfileMainWishDto();
 
-		Long memberId = null;
 		if(request.containsKey("memberId")) {
 			profileMainWishDto.setMemberId(Long.parseLong(request.get("memberId")));
 		}
 		else {
 			String[] principalInfo = principal.getName().split(" ");
-			memberId = Long.parseLong(principalInfo[0]);
+			Long memberId = Long.parseLong(principalInfo[0]);
 			profileMainWishDto.setMemberId(memberId);
 		}
 
@@ -117,9 +114,11 @@ public class ProfileController {
 	public ResponseEntity<BaseResponse<FeedResponseResult>> getProfileFeedResponse(@ApiIgnore Principal principal,
 			@RequestParam Map<String, String> request) {
 
-
-		String[] principalInfo = principal.getName().split(" ");
-		Long loginMemberId = Long.parseLong(principalInfo[0]);
+		Long loginMemberId = 0L;
+		if(principal != null) {
+			String[] principalInfo = principal.getName().split(" ");
+			loginMemberId = Long.parseLong(principalInfo[0]);
+		}
 
 		ProfileFeedDto profileFeedDto = new ProfileFeedDto();
 		profileFeedDto.setPageNumber(Integer.parseInt(request.get("pageNumber")));
@@ -149,8 +148,11 @@ public class ProfileController {
 			@RequestParam Map<String, String> request) {
 
 
-		String[] principalInfo = principal.getName().split(" ");
-		Long loginMemberId =  Long.parseLong(principalInfo[0]);
+		Long loginMemberId = 0L;
+		if(principal != null) {
+			String[] principalInfo = principal.getName().split(" ");
+			loginMemberId = Long.parseLong(principalInfo[0]);
+		}
 
 		ProfileFeedDto profileFeedDto = new ProfileFeedDto();
 		profileFeedDto.setPageNumber(Integer.parseInt(request.get("pageNumber")));
@@ -182,14 +184,26 @@ public class ProfileController {
 		ProfileMainWishDto profileMainWishDto = new ProfileMainWishDto();
 		profileMainWishDto.setPageNumber(Integer.parseInt(request.get("pageNumber")));
 
-		Long memberId = null;
-		if(request.containsKey("memberId")) {
-			profileMainWishDto.setMemberId(Long.parseLong(request.get("memberId")));
-		}
-		else{
-			String[] principalInfo = principal.getName().split(" ");
-			memberId = Long.parseLong(principalInfo[0]);
-			profileMainWishDto.setMemberId(memberId);
+		if(principal != null) {
+			if (request.containsKey("memberId")) {
+				profileMainWishDto.setMemberId(Long.parseLong(request.get("memberId")));
+			}
+			else {
+				String[] principalInfo = principal.getName().split(" ");
+				Long memberId = Long.parseLong(principalInfo[0]);
+				profileMainWishDto.setMemberId(memberId);
+			}
+		}else {
+			if (request.containsKey("memberId")) {
+				profileMainWishDto.setMemberId(Long.parseLong(request.get("memberId")));
+			}
+			else{
+				BaseResponse baseResponse = BaseResponse.builder()
+						.httpStatus(HttpStatus.BAD_REQUEST)
+						.message("Failure of getting profile wish list ")
+						.build();
+				return new ResponseEntity(baseResponse, HttpStatus.BAD_REQUEST);
+			}
 		}
 
 		WishProductListResult wishList = feedService.findByMemberWishDetailList(profileMainWishDto);
@@ -210,17 +224,33 @@ public class ProfileController {
 
 		MemberProfileDto memberProfileDto = new MemberProfileDto();
 
-		String[] principalInfo = principal.getName().split(" ");
-		Long loginId = Long.parseLong(principalInfo[0]);
-		String loginRole = principalInfo[1];
+		if(principal != null) {
+			if(request.containsKey("memberId")){
+				memberProfileDto.setMemberId(Long.parseLong(request.get("memberId")));
+				memberProfileDto.setMemberRole(request.get("memberRole"));
+			}
+			else {
+				String[] principalInfo = principal.getName().split(" ");
+				Long loginId = Long.parseLong(principalInfo[0]);
+				String loginRole = principalInfo[1];
 
-		if(request.containsKey("memberId")) {
-			memberProfileDto.setMemberId(Long.parseLong(request.get("memberId")));
-			memberProfileDto.setMemberRole(request.get("memberRole"));
-		}else{
-			memberProfileDto.setMemberId(loginId);
-			memberProfileDto.setMemberRole(loginRole);
+				memberProfileDto.setMemberId(loginId);
+				memberProfileDto.setMemberRole(loginRole);
+			}
+		}else {
+			if (request.containsKey("memberId")) {
+				memberProfileDto.setMemberId(Long.parseLong(request.get("memberId")));
+				memberProfileDto.setMemberRole(request.get("memberRole"));
+			} else {
+				BaseResponse baseResponse = BaseResponse.builder()
+						.httpStatus(HttpStatus.BAD_REQUEST)
+						.message("Failure of getting profile count")
+						.build();
+				return new ResponseEntity(baseResponse, HttpStatus.BAD_REQUEST);
+			}
 		}
+
+		System.out.println("count : "+memberProfileDto.getMemberId()+" "+memberProfileDto.getMemberRole());
 
 		MemberProfileCountResponse memberProfileCountResponse = feedService.getFeedScrapWishCount(memberProfileDto);
 

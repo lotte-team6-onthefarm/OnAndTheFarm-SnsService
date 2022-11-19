@@ -128,7 +128,7 @@ public class CommentController {
     @ApiOperation("피드 댓글 조회")
     public ResponseEntity<BaseResponse<CommentResponse>> findComment(@ApiIgnore Principal principal, @RequestParam Long feedId){
 
-        Long memberId = 0l;
+        Long memberId = 0L;
 
         if(principal != null){
             String[] principalInfo = principal.getName().split(" ");

@@ -219,9 +219,18 @@ public class FeedContentController {
 
         Boolean successStatus = feedService.updateSharePoint(userPointUpdateRequest.getFeedNumber());
 
+        if(!successStatus){
+            BaseResponse response = BaseResponse.builder()
+                    .httpStatus(HttpStatus.BAD_REQUEST)
+                    .message("update user point fail")
+                    .build();
+
+            return new ResponseEntity(response, HttpStatus.BAD_REQUEST);
+        }
+
         BaseResponse response = BaseResponse.builder()
                 .httpStatus(HttpStatus.OK)
-                .message("OK")
+                .message("update user point success")
                 .build();
 
         return new ResponseEntity(response, HttpStatus.OK);

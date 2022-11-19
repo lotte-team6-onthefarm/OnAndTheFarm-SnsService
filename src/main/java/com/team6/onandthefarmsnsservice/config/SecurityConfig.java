@@ -34,6 +34,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/user/product/list/**", "/api/user/product/{\\d+}", "/api/user/product/QnA/{\\d+}").permitAll()
                 .antMatchers("/api/user/review/info", "/api/user/review/list/**").permitAll()
                 .antMatchers("/api/seller/product/list/**").permitAll()
+                .antMatchers("/api/user/sns/feed/detail", "/api/user/sns/comment/list", "/api/user/sns/feed/share/**", "/api/user/sns/feed/list/**", "/api/user/sns/profile/**").permitAll()
                 .antMatchers("/api/user/**").hasAnyRole("USER", "SELLER")
                 .antMatchers("/api/seller/**").hasRole("SELLER")
                 .antMatchers("/api/admin/**").hasRole("ADMIN")
