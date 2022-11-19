@@ -5,6 +5,7 @@ import com.team6.onandthefarmsnsservice.service.FeedService;
 import com.team6.onandthefarmsnsservice.utils.BaseResponse;
 import com.team6.onandthefarmsnsservice.vo.feed.*;
 import com.team6.onandthefarmsnsservice.vo.product.AddableProductResponse;
+import com.team6.onandthefarmsnsservice.vo.user.UserPointUpdateRequest;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -71,15 +72,10 @@ public class FeedContentController {
 
         Long loginMemberId = 0L;
         Long feedId = Long.parseLong(request.get("feedId"));
-        Long feedNumber = null;
 
         if(principal != null){
             String[] principalInfo = principal.getName().split(" ");
             loginMemberId = Long.parseLong(principalInfo[0]);
-        }
-
-        if(request.containsKey("feedNumber")){
-            feedNumber = Long.parseLong(request.get("feedNumber"));
         }
 
         //조회수 증가
@@ -88,7 +84,7 @@ public class FeedContentController {
             return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        FeedDetailResponse feedDetailResponse = feedService.findFeedDetail(feedId, loginMemberId, feedNumber);
+        FeedDetailResponse feedDetailResponse = feedService.findFeedDetail(feedId, loginMemberId);
 
         BaseResponse baseResponse = BaseResponse.builder()
                 .httpStatus(HttpStatus.OK)
@@ -217,6 +213,20 @@ public class FeedContentController {
         return new ResponseEntity(baseResponse, HttpStatus.OK);
     }
 
+    @PutMapping("/feed/share/point")
+    @ApiOperation("공유된 url로 feed 접근 시 feed 작성자에게 포인트 지급")
+    public ResponseEntity<BaseResponse> updateSharePoint(@RequestBody UserPointUpdateRequest userPointUpdateRequest){
+
+        Boolean successStatus = feedService.updateSharePoint(userPointUpdateRequest.getFeedNumber());
+
+        BaseResponse response = BaseResponse.builder()
+                .httpStatus(HttpStatus.OK)
+                .message("OK")
+                .build();
+
+        return new ResponseEntity(response, HttpStatus.OK);
+    }
+
     @GetMapping("/feed/list/tag")
     @ApiOperation("tag 별로 조회")
     public ResponseEntity<BaseResponse<FeedResponseResult>> findByFeedTag(@ApiIgnore Principal principal,
@@ -228,12 +238,12 @@ public class FeedContentController {
             loginMemberId = Long.parseLong(principalInfo[0]);
         }
 
-        FeedResponseResult responses = feedService.findByFeedTag(feedTagName, pageNumber, loginMemberId);
+        FeedResponseResult feedResponses = feedService.findByFeedTag(feedTagName, pageNumber, loginMemberId);
 
         BaseResponse response = BaseResponse.builder()
                 .httpStatus(HttpStatus.OK)
                 .message("OK")
-                .data(responses)
+                .data(feedResponses)
                 .build();
 
         return new ResponseEntity(response, HttpStatus.OK);
