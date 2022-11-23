@@ -278,7 +278,8 @@ public class FeedServiceImpl implements FeedService {
 			List<ImageProductResponse> imageProductInfoList = new ArrayList<>();
 
 			List<FeedImage> savedFeedImageList = feedImageRepository.findByFeed(feedEntity);
-			for (FeedImage feedImage : savedFeedImageList) {
+			for (int i=1; i<savedFeedImageList.size(); i++) {
+				FeedImage feedImage = savedFeedImageList.get(i);
 				ImageInfo imageInfo = ImageInfo.builder()
 						.feedImageId(feedImage.getFeedImageId())
 						.feedImageSrc(feedImage.getFeedImageSrc())
