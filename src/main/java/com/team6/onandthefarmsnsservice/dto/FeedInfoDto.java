@@ -23,6 +23,8 @@ public class FeedInfoDto {
 
     private List<ImageProductInfo> feedProductIdList;
 
+    private List<MultipartFile> originFeedImages;
+
     private List<Long> deleteImg;
 
 }
