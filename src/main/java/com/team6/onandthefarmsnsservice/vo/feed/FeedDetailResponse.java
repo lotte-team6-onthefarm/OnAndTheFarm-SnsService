@@ -45,6 +45,8 @@ public class FeedDetailResponse {
 
     private String feedUpdateAt;
 
+    private List<ImageInfo> feedOriginImageList;
+
     private List<ImageInfo> feedImageList;
 
     private List<ImageProductResponse> feedImageProductList;

@@ -162,15 +162,18 @@ public class FeedServiceImpl implements FeedService {
 			}
 		}
 
+		List<Long> imageIdList = new ArrayList<>();
+		// origin image 저장
 		int imageIndex = 0;
-		for (MultipartFile imageSrc : feedInfoDto.getFeedImgSrcList()) {
+		for (MultipartFile imageSrc : feedInfoDto.getOriginFeedImages()) {
 			//피드 이미지 추가
 			String url = s3Upload.feedUpload(imageSrc);
 
 			FeedImage feedImage = new FeedImage();
 			feedImage.setFeed(savedFeed);
-			feedImage.setFeedImageSrc(url);
+			feedImage.setFeedOriginImageSrc(url);
 			FeedImage saveFeedImage = feedImageRepository.save(feedImage);
+			imageIdList.add(saveFeedImage.getFeedImageId());
 
 			if(feedInfoDto.getFeedProductIdList() != null) {
 				for (ImageProductInfo imageProduct : feedInfoDto.getFeedProductIdList()) {
@@ -187,6 +190,15 @@ public class FeedServiceImpl implements FeedService {
 				}
 			}
 			imageIndex++;
+		}
+
+		//압축 이미지 저장
+		for (int i=0; i<feedInfoDto.getFeedImgSrcList().size(); i++) {
+			MultipartFile imageSrc = feedInfoDto.getFeedImgSrcList().get(i);
+			String url = s3Upload.feedUpload(imageSrc);
+
+			Optional<FeedImage> feedImage = feedImageRepository.findById(imageIdList.get(i));
+			feedImage.get().setFeedImageSrc(url);
 		}
 
 		return savedFeed.getFeedId();
@@ -274,17 +286,18 @@ public class FeedServiceImpl implements FeedService {
 			Feed feedEntity = savedFeed.get();
 
 			// feed image 및 image 별 product
-			List<ImageInfo> imageInfoList = new ArrayList<>();
+			List<ImageInfo> originImageInfoList = new ArrayList<>();
 			List<ImageProductResponse> imageProductInfoList = new ArrayList<>();
+			List<ImageInfo> imageInfoList = new ArrayList<>();
 
 			List<FeedImage> savedFeedImageList = feedImageRepository.findByFeed(feedEntity);
-			for (int i=1; i<savedFeedImageList.size(); i++) {
+			for (int i=0; i<savedFeedImageList.size(); i++) {
 				FeedImage feedImage = savedFeedImageList.get(i);
 				ImageInfo imageInfo = ImageInfo.builder()
 						.feedImageId(feedImage.getFeedImageId())
-						.feedImageSrc(feedImage.getFeedImageSrc())
+						.feedImageSrc(feedImage.getFeedOriginImageSrc())
 						.build();
-				imageInfoList.add(imageInfo);
+				originImageInfoList.add(imageInfo);
 
 				List<FeedImageProduct> savedFeedImageProductList = feedImageProductRepository.findByFeedImage(
 						feedImage);
@@ -317,6 +330,15 @@ public class FeedServiceImpl implements FeedService {
 				}
 			}
 
+			for(int i=0; i<savedFeedImageList.size(); i++){
+				FeedImage feedImage = savedFeedImageList.get(i);
+				ImageInfo imageInfo = ImageInfo.builder()
+						.feedImageId(feedImage.getFeedImageId())
+						.feedImageSrc(feedImage.getFeedImageSrc())
+						.build();
+				imageInfoList.add(imageInfo);
+			}
+
 			// feed 별 tag
 			List<FeedTag> feedTagList = feedTagRepository.findByFeed(feedEntity);
 
@@ -331,6 +353,7 @@ public class FeedServiceImpl implements FeedService {
 					.feedCommentCount(feedEntity.getFeedCommentCount())
 					.feedCreateAt(feedEntity.getFeedCreateAt())
 					.feedUpdateAt(feedEntity.getFeedUpdateAt())
+					.feedOriginImageList(originImageInfoList)
 					.feedImageList(imageInfoList)
 					.feedImageProductList(imageProductInfoList)
 					.feedTag(feedTagList)

@@ -34,6 +34,7 @@ public class FeedContentController {
     public ResponseEntity<BaseResponse> uploadFeed(@ApiIgnore Principal principal,
                                                    @RequestPart(value = "data", required = false) FeedUploadRequest feedUploadRequest,
                                                    @RequestPart(value = "images", required = false) List<MultipartFile> feedImages,
+                                                   @RequestPart(value = "originImages", required = false) List<MultipartFile> originFeedImages,
                                                    @RequestPart(value = "productData", required = false) FeedUploadProductRequest feedUploadProductRequest)
             throws Exception {
 
@@ -43,6 +44,7 @@ public class FeedContentController {
         feedInfoDto.setFeedTag(feedUploadRequest.getFeedTag());
         feedInfoDto.setFeedProductIdList(feedUploadProductRequest.getFeedProductIdList());
         feedInfoDto.setFeedImgSrcList(feedImages);
+        feedInfoDto.setOriginFeedImages(originFeedImages);
 
         String[] principalInfo = principal.getName().split(" ");
         Long memberId = Long.parseLong(principalInfo[0]);
